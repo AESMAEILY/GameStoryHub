@@ -26,7 +26,12 @@
       "es": "",
       "fr": ""
     },
-    "poster": "assets/posters/hades-2.jpg"
+    "poster": "assets/posters/hades-2.jpg",
+    "officialScore": {
+      "value": 94,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/hades-ii/"
+    }
   },
   {
     "slug": "hollow-knight-silksong",
@@ -97,7 +102,12 @@
         "youtubeId": "2ibksBGrvcs",
         "videoTitle": "Hollow Knight: Silksong Review"
       }
-    ]
+    ],
+    "officialScore": {
+      "value": 93,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/hollow-knight-silksong/"
+    }
   },
   {
     "slug": "donkey-kong-bananza",
@@ -124,7 +134,12 @@
       "es": "",
       "fr": ""
     },
-    "poster": "assets/posters/donkey-kong-bananza.jpg"
+    "poster": "assets/posters/donkey-kong-bananza.jpg",
+    "officialScore": {
+      "value": 91,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/donkey-kong-bananza/"
+    }
   },
   {
     "slug": "death-stranding-2",
@@ -151,7 +166,12 @@
       "es": "",
       "fr": ""
     },
-    "poster": "assets/posters/death-stranding-2.jpg"
+    "poster": "assets/posters/death-stranding-2.jpg",
+    "officialScore": {
+      "value": 89,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/death-stranding-2-on-the-beach/"
+    }
   },
   {
     "slug": "clair-obscur-expedition-33",
@@ -218,7 +238,12 @@
         "youtubeId": "KvJv-Rlx4bI",
         "videoTitle": "Clair Obscur: Expedition 33 Review"
       }
-    ]
+    ],
+    "officialScore": {
+      "value": 90,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/clair-obscur-expedition-33/"
+    }
   },
   {
     "slug": "split-fiction",
@@ -247,7 +272,12 @@
       "es": "",
       "fr": ""
     },
-    "poster": "assets/posters/split-fiction.jpg"
+    "poster": "assets/posters/split-fiction.jpg",
+    "officialScore": {
+      "value": 91,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/split-fiction/"
+    }
   },
   {
     "slug": "monster-hunter-wilds",
@@ -276,7 +306,12 @@
       "es": "",
       "fr": ""
     },
-    "poster": "assets/posters/monster-hunter-wilds.jpg"
+    "poster": "assets/posters/monster-hunter-wilds.jpg",
+    "officialScore": {
+      "value": 88,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/monster-hunter-wilds/"
+    }
   },
   {
     "slug": "metaphor-refantazio",
@@ -305,6 +340,11 @@
       "de": "",
       "es": "",
       "fr": ""
+    },
+    "officialScore": {
+      "value": 94,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/metaphor-refantazio/"
     }
   },
   {
@@ -332,7 +372,12 @@
       "es": "",
       "fr": ""
     },
-    "poster": "assets/posters/astro-bot.jpg"
+    "poster": "assets/posters/astro-bot.jpg",
+    "officialScore": {
+      "value": 94,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/astro-bot/"
+    }
   },
   {
     "slug": "black-myth-wukong",
@@ -361,7 +406,12 @@
       "es": "",
       "fr": ""
     },
-    "poster": "assets/posters/black-myth-wukong.jpg"
+    "poster": "assets/posters/black-myth-wukong.jpg",
+    "officialScore": {
+      "value": 81,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/black-myth-wukong/"
+    }
   },
   {
     "slug": "final-fantasy-7-rebirth",
@@ -388,6 +438,11 @@
       "de": "",
       "es": "",
       "fr": ""
+    },
+    "officialScore": {
+      "value": 92,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/final-fantasy-vii-rebirth/"
     }
   },
   {
@@ -414,6 +469,11 @@
       "de": "",
       "es": "",
       "fr": ""
+    },
+    "officialScore": {
+      "value": 91,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/marvels-spider-man-2/"
     }
   },
   {
@@ -441,7 +501,12 @@
       "es": "",
       "fr": ""
     },
-    "poster": "assets/posters/counter-strike-2.jpg"
+    "poster": "assets/posters/counter-strike-2.jpg",
+    "officialScore": {
+      "value": 81,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/counter-strike-2/"
+    }
   },
   {
     "slug": "baldurs-gate-3",
@@ -509,7 +574,12 @@
         "youtubeId": "KAVPOAwrHmE",
         "videoTitle": "Baldur's Gate 3 (BG3) Walkthrough Part 1: Beginner's Guide - Tactical Gameplay with Commentary"
       }
-    ]
+    ],
+    "officialScore": {
+      "value": 96,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/baldurs-gate-3/"
+    }
   },
   {
     "slug": "diablo-4",
@@ -540,7 +610,12 @@
       "es": "",
       "fr": ""
     },
-    "poster": "assets/posters/diablo-4.jpg"
+    "poster": "assets/posters/diablo-4.jpg",
+    "officialScore": {
+      "value": 87,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/diablo-iv/"
+    }
   },
   {
     "slug": "zelda-tears-of-the-kingdom",
@@ -605,7 +680,12 @@
         "youtubeId": "D3UDC0Xxh7Q",
         "videoTitle": "The Legend of Zelda: Tears of the Kingdom Ending Explained And How It Sets Up the Sequel"
       }
-    ]
+    ],
+    "officialScore": {
+      "value": 96,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/the-legend-of-zelda-tears-of-the-kingdom/"
+    }
   },
   {
     "slug": "resident-evil-4-remake",
@@ -635,7 +715,12 @@
       "es": "",
       "fr": ""
     },
-    "poster": "assets/posters/resident-evil-4-remake.jpg"
+    "poster": "assets/posters/resident-evil-4-remake.jpg",
+    "officialScore": {
+      "value": 93,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/resident-evil-4/"
+    }
   },
   {
     "slug": "god-of-war-ragnarok",
@@ -701,7 +786,12 @@
         "youtubeId": "3VYzN-c_9q0",
         "videoTitle": "God of War Ragnarok Story Explained"
       }
-    ]
+    ],
+    "officialScore": {
+      "value": 94,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/god-of-war-ragnarok/"
+    }
   },
   {
     "slug": "elden-ring",
@@ -731,6 +821,11 @@
       "de": "",
       "es": "",
       "fr": ""
+    },
+    "officialScore": {
+      "value": 96,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/elden-ring/"
     }
   },
   {
@@ -759,6 +854,11 @@
       "de": "",
       "es": "",
       "fr": ""
+    },
+    "officialScore": {
+      "value": 88,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/horizon-forbidden-west/"
     }
   },
   {
@@ -788,6 +888,11 @@
       "de": "",
       "es": "",
       "fr": ""
+    },
+    "officialScore": {
+      "value": 90,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/it-takes-two/"
     }
   },
   {
@@ -817,6 +922,11 @@
       "de": "",
       "es": "",
       "fr": ""
+    },
+    "officialScore": {
+      "value": 87,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/cyberpunk-2077/"
     }
   },
   {
@@ -846,6 +956,11 @@
       "de": "",
       "es": "",
       "fr": ""
+    },
+    "officialScore": {
+      "value": 86,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/assassins-creed-valhalla/"
     }
   },
   {
@@ -876,6 +991,11 @@
       "de": "",
       "es": "",
       "fr": ""
+    },
+    "officialScore": {
+      "value": 93,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/hades/"
     }
   },
   {
@@ -904,6 +1024,11 @@
       "de": "",
       "es": "",
       "fr": ""
+    },
+    "officialScore": {
+      "value": 83,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/ghost-of-tsushima/"
     }
   },
   {
@@ -931,6 +1056,11 @@
       "de": "",
       "es": "",
       "fr": ""
+    },
+    "officialScore": {
+      "value": 93,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/the-last-of-us-part-ii/"
     }
   },
   {
@@ -959,6 +1089,11 @@
       "de": "",
       "es": "",
       "fr": ""
+    },
+    "officialScore": {
+      "value": 87,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/final-fantasy-vii-remake/"
     }
   },
   {
@@ -988,6 +1123,11 @@
       "de": "",
       "es": "",
       "fr": ""
+    },
+    "officialScore": {
+      "value": 95,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/persona-5-royal/"
     }
   },
   {
@@ -1014,6 +1154,11 @@
       "de": "",
       "es": "",
       "fr": ""
+    },
+    "officialScore": {
+      "value": 93,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/half-life-alyx/"
     }
   },
   {
@@ -1040,6 +1185,11 @@
       "de": "",
       "es": "",
       "fr": ""
+    },
+    "officialScore": {
+      "value": 91,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/animal-crossing-new-horizons/"
     }
   },
   {
@@ -1068,6 +1218,11 @@
       "de": "",
       "es": "",
       "fr": ""
+    },
+    "officialScore": {
+      "value": 90,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/sekiro-shadows-die-twice/"
     }
   },
   {
@@ -1096,6 +1251,11 @@
       "de": "",
       "es": "",
       "fr": ""
+    },
+    "officialScore": {
+      "value": 93,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/red-dead-redemption-2/"
     }
   },
   {
@@ -1123,6 +1283,11 @@
       "de": "",
       "es": "",
       "fr": ""
+    },
+    "officialScore": {
+      "value": 87,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/marvels-spider-man/"
     }
   },
   {
@@ -1150,6 +1315,11 @@
       "de": "",
       "es": "",
       "fr": ""
+    },
+    "officialScore": {
+      "value": 94,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/god-of-war/"
     }
   },
   {
@@ -1177,6 +1347,11 @@
       "de": "",
       "es": "",
       "fr": ""
+    },
+    "officialScore": {
+      "value": 97,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/the-legend-of-zelda-breath-of-the-wild/"
     }
   },
   {
@@ -1204,6 +1379,11 @@
       "de": "",
       "es": "",
       "fr": ""
+    },
+    "officialScore": {
+      "value": 89,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/horizon-zero-dawn/"
     }
   },
   {
@@ -1233,6 +1413,11 @@
       "de": "",
       "es": "",
       "fr": ""
+    },
+    "officialScore": {
+      "value": 90,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/hollow-knight/"
     }
   },
   {
@@ -1261,6 +1446,11 @@
       "de": "",
       "es": "",
       "fr": ""
+    },
+    "officialScore": {
+      "value": 89,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/dark-souls-iii/"
     }
   },
   {
@@ -1291,6 +1481,11 @@
       "de": "",
       "es": "",
       "fr": ""
+    },
+    "officialScore": {
+      "value": 89,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/stardew-valley/"
     }
   },
   {
@@ -1319,6 +1514,11 @@
       "de": "",
       "es": "",
       "fr": ""
+    },
+    "officialScore": {
+      "value": 84,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/fallout-4/"
     }
   },
   {
@@ -1348,6 +1548,11 @@
       "de": "",
       "es": "",
       "fr": ""
+    },
+    "officialScore": {
+      "value": 93,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/the-witcher-3-wild-hunt/"
     }
   },
   {
@@ -1374,6 +1579,11 @@
       "de": "",
       "es": "",
       "fr": ""
+    },
+    "officialScore": {
+      "value": 92,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/bloodborne/"
     }
   },
   {
@@ -1403,6 +1613,11 @@
       "de": "",
       "es": "",
       "fr": ""
+    },
+    "officialScore": {
+      "value": 96,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/grand-theft-auto-v/"
     }
   },
   {
@@ -1432,6 +1647,11 @@
       "de": "",
       "es": "",
       "fr": ""
+    },
+    "officialScore": {
+      "value": 95,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/the-last-of-us/"
     }
   },
   {
@@ -1461,6 +1681,11 @@
       "de": "",
       "es": "",
       "fr": ""
+    },
+    "officialScore": {
+      "value": 93,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/minecraft/"
     }
   },
   {
@@ -1492,6 +1717,11 @@
       "de": "",
       "es": "",
       "fr": ""
+    },
+    "officialScore": {
+      "value": 94,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/the-elder-scrolls-v-skyrim/"
     }
   },
   {
@@ -1521,6 +1751,11 @@
       "de": "",
       "es": "",
       "fr": ""
+    },
+    "officialScore": {
+      "value": 83,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/terraria/"
     }
   },
   {
@@ -1549,6 +1784,11 @@
       "de": "",
       "es": "",
       "fr": ""
+    },
+    "officialScore": {
+      "value": 96,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/portal-2/"
     }
   },
   {
@@ -1577,6 +1817,11 @@
       "de": "",
       "es": "",
       "fr": ""
+    },
+    "officialScore": {
+      "value": 94,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/mass-effect-2/"
     }
   },
   {
@@ -1603,6 +1848,11 @@
       "de": "",
       "es": "",
       "fr": ""
+    },
+    "officialScore": {
+      "value": 93,
+      "source": "Metacritic",
+      "url": "https://www.metacritic.com/game/world-of-warcraft/"
     }
   }
 ]
