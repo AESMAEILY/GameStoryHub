@@ -756,71 +756,232 @@
   }
   GC.wireNewsletterForm = wireNewsletterForm;
 
-  // ---------- wishlist (personal, localStorage — no account needed) ----------
-  // A visitor's wishlist is theirs alone: saved in their own browser, not
-  // synced anywhere, not visible to anyone else. That's a deliberate scope
-  // choice — see the project notes for why this differs from ratings/reviews,
-  // which ARE shared publicly via Supabase below.
-  const WISHLIST_KEY = "gc_wishlist";
-  function getWishlist() {
-    try {
-      const raw = localStorage.getItem(WISHLIST_KEY);
-      const arr = raw ? JSON.parse(raw) : [];
-      return Array.isArray(arr) ? arr : [];
-    } catch (e) { return []; }
+  // ---------- accounts (Supabase Auth — email magic link) ----------
+  // Wishlist and reviews both require a real, signed-in account. Earlier
+  // versions kept the wishlist in localStorage and reviews fully anonymous;
+  // both turned out to be the wrong tradeoff — a wishlist that resets the
+  // moment you close the tab isn't useful, and an anonymous rating has
+  // nothing stopping the same visitor from voting many times (no way to
+  // count it "by IP" or "by browser" that actually holds up). Accounts fix
+  // both: one rating per game per account (see renderReviewsSection below),
+  // and a wishlist that follows the visitor anywhere they sign in.
+  let supabaseClientPromise = null;
+  function getSupabaseClient() {
+    if (supabaseClientPromise) return supabaseClientPromise;
+    const cfg = window.GC_CONFIG || {};
+    if (!cfg.supabaseUrl || !cfg.supabasePublishableKey) {
+      supabaseClientPromise = Promise.resolve(null);
+      return supabaseClientPromise;
+    }
+    supabaseClientPromise = new Promise((resolve) => {
+      if (window.supabase && window.supabase.createClient) {
+        resolve(window.supabase.createClient(cfg.supabaseUrl, cfg.supabasePublishableKey));
+        return;
+      }
+      const tag = document.createElement("script");
+      tag.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js";
+      tag.onload = () => resolve(window.supabase ? window.supabase.createClient(cfg.supabaseUrl, cfg.supabasePublishableKey) : null);
+      tag.onerror = () => resolve(null);
+      document.head.appendChild(tag);
+    });
+    return supabaseClientPromise;
   }
-  function isWishlisted(slug) { return getWishlist().indexOf(slug) !== -1; }
-  function setWishlist(list) {
-    try { localStorage.setItem(WISHLIST_KEY, JSON.stringify(list)); } catch (e) { /* storage unavailable */ }
+
+  let currentSession = null;
+  let sessionInitDone = false;
+  const authListeners = [];
+  function notifyAuthListeners() { authListeners.forEach((fn) => { try { fn(currentSession); } catch (e) { /* listener error shouldn't break auth */ } }); }
+  function onAuthChange(fn) { authListeners.push(fn); if (sessionInitDone) fn(currentSession); }
+  function getSession() { return currentSession; }
+
+  getSupabaseClient().then((client) => {
+    if (!client) { sessionInitDone = true; notifyAuthListeners(); return; }
+    client.auth.getSession().then(({ data }) => {
+      currentSession = data.session || null;
+      sessionInitDone = true;
+      notifyAuthListeners();
+    });
+    client.auth.onAuthStateChange((event, session) => {
+      currentSession = session || null;
+      // A magic-link click lands back here with #access_token=... in the
+      // URL; once supabase-js has parsed it into a session, drop it from
+      // the visible URL rather than leaving a token hanging in the bar.
+      if (event === "SIGNED_IN" && window.location.hash.indexOf("access_token") !== -1) {
+        history.replaceState(null, "", window.location.pathname + window.location.search);
+      }
+      notifyAuthListeners();
+    });
+  });
+
+  function signInWithEmail(email) {
+    return getSupabaseClient().then((client) => {
+      if (!client) return { error: { message: "Accounts are temporarily unavailable." } };
+      return client.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.href } });
+    });
   }
+  function signOutUser() {
+    return getSupabaseClient().then((client) => (client ? client.auth.signOut() : null));
+  }
+
+  // A single sign-in/sign-out overlay, built once and reused from anywhere
+  // (a wishlist heart, a review form, the wishlist page) — mirrors the
+  // existing search-overlay pattern (dock nav) rather than a one-off modal.
+  let authOverlayEls = null;
+  function ensureAuthOverlay() {
+    if (authOverlayEls) return authOverlayEls;
+    const wrap = document.createElement("div");
+    wrap.className = "auth-overlay";
+    wrap.innerHTML =
+      '<div class="auth-overlay-backdrop"></div>' +
+      '<div class="auth-overlay-panel" role="dialog" aria-modal="true" aria-label="Account">' +
+      '<button type="button" class="auth-overlay-close" aria-label="Close">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>' +
+      '<div data-auth-signed-out>' +
+      '<h3>Sign in to continue</h3>' +
+      '<p class="auth-context-msg" data-auth-context></p>' +
+      '<form class="auth-email-form" data-auth-form>' +
+      '<input type="email" name="email" placeholder="you@email.com" required autocomplete="email">' +
+      '<button type="submit" class="btn-primary">Send magic link</button>' +
+      '</form>' +
+      '<p class="auth-status" data-auth-status></p>' +
+      '</div>' +
+      '<div data-auth-signed-in hidden>' +
+      '<h3>You’re signed in</h3>' +
+      '<p class="auth-current-email" data-auth-email></p>' +
+      '<button type="button" class="auth-signout-btn" data-auth-signout>Sign out</button>' +
+      '</div>' +
+      '</div>';
+    document.body.appendChild(wrap);
+
+    function close() { wrap.classList.remove("open"); }
+    wrap.querySelector(".auth-overlay-backdrop").addEventListener("click", close);
+    wrap.querySelector(".auth-overlay-close").addEventListener("click", close);
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+
+    const form = wrap.querySelector("[data-auth-form]");
+    const status = wrap.querySelector("[data-auth-status]");
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const email = (form.email.value || "").trim();
+      if (!email) return;
+      const btn = form.querySelector("button[type=submit]");
+      btn.disabled = true;
+      status.textContent = "Sending…";
+      signInWithEmail(email).then(({ error }) => {
+        btn.disabled = false;
+        status.textContent = error ? "Couldn’t send that — check the address and try again." : "Check your email for a sign-in link.";
+      });
+    });
+    wrap.querySelector("[data-auth-signout]").addEventListener("click", () => { signOutUser().then(close); });
+
+    authOverlayEls = {
+      wrap, close,
+      signedOut: wrap.querySelector("[data-auth-signed-out]"),
+      signedIn: wrap.querySelector("[data-auth-signed-in]"),
+      context: wrap.querySelector("[data-auth-context]"),
+      email: wrap.querySelector("[data-auth-email]"),
+      status, form,
+    };
+    return authOverlayEls;
+  }
+
+  function openAuthGate(message) {
+    const els = ensureAuthOverlay();
+    els.status.textContent = "";
+    els.form.reset();
+    if (currentSession) {
+      els.signedOut.hidden = true;
+      els.signedIn.hidden = false;
+      els.email.textContent = currentSession.user.email;
+    } else {
+      els.signedOut.hidden = false;
+      els.signedIn.hidden = true;
+      els.context.textContent = message || "";
+    }
+    els.wrap.classList.add("open");
+  }
+
+  GC.auth = {
+    getSession,
+    onChange: onAuthChange,
+    signInWithEmail,
+    signOut: signOutUser,
+    openGate: openAuthGate,
+    client: getSupabaseClient,
+  };
+
+  // ---------- wishlist (account-gated, shared via Supabase) ----------
+  let wishlistCache = null; // Set<slug> once loaded for the signed-in user; null when signed out / not yet loaded
+  let wishlistLoadPromise = null;
+  function loadWishlist() {
+    if (!currentSession) { wishlistCache = null; wishlistLoadPromise = null; return Promise.resolve(null); }
+    if (wishlistLoadPromise) return wishlistLoadPromise;
+    const uid = currentSession.user.id;
+    wishlistLoadPromise = getSupabaseClient().then((client) => {
+      if (!client) { wishlistCache = new Set(); return wishlistCache; }
+      return client.from("wishlist_items").select("game_slug").eq("user_id", uid).then(({ data, error }) => {
+        wishlistCache = new Set((error ? [] : data || []).map((r) => r.game_slug));
+        return wishlistCache;
+      });
+    });
+    return wishlistLoadPromise;
+  }
+  function isWishlisted(slug) { return !!(wishlistCache && wishlistCache.has(slug)); }
+
   function toggleWishlist(slug) {
-    const list = getWishlist();
-    const i = list.indexOf(slug);
-    if (i === -1) { list.push(slug); } else { list.splice(i, 1); }
-    setWishlist(list);
-    document.dispatchEvent(new CustomEvent("gc:wishlist-change", { detail: { slug, on: i === -1 } }));
-    return i === -1; // true = now wishlisted
+    if (!currentSession) { openAuthGate("Sign in to save games to your wishlist."); return; }
+    if (!wishlistCache) wishlistCache = new Set();
+    const willAdd = !wishlistCache.has(slug);
+    if (willAdd) wishlistCache.add(slug); else wishlistCache.delete(slug);
+    document.dispatchEvent(new CustomEvent("gc:wishlist-change", { detail: { slug, on: willAdd } }));
+    const uid = currentSession.user.id;
+    getSupabaseClient().then((client) => {
+      if (!client) return;
+      const op = willAdd
+        ? client.from("wishlist_items").insert({ user_id: uid, game_slug: slug })
+        : client.from("wishlist_items").delete().eq("user_id", uid).eq("game_slug", slug);
+      op.then(({ error }) => {
+        if (!error) return;
+        if (willAdd) wishlistCache.delete(slug); else wishlistCache.add(slug);
+        document.dispatchEvent(new CustomEvent("gc:wishlist-change", { detail: { slug, on: !willAdd } }));
+      });
+    });
   }
-  GC.wishlist = { get: getWishlist, has: isWishlisted, toggle: toggleWishlist };
+  GC.wishlist = { get: () => (wishlistCache ? Array.from(wishlistCache) : []), has: isWishlisted, toggle: toggleWishlist, ready: loadWishlist };
+
+  onAuthChange(() => { loadWishlist().then(repaintWishlistButtons); });
 
   const HEART_ICON = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.2-4.6-10-9.2C.4 8.6 2 5 5.6 5c2 0 3.4 1 4.9 2.9C11.9 6 13.3 5 15.3 5 19 5 20.6 8.6 19 11.8 16.8 16.4 12 21 12 21z"/></svg>';
 
-  // Renders/attaches a heart toggle button to `host` for `slug`.
-  // Used on tile cards (compact, top-right) and the game-hero title block
-  // (labeled, "Add to wishlist" / "In your wishlist").
-  function wireWishlistButton(host, slug) {
-    if (!host) return;
-    function paint() {
-      const on = isWishlisted(slug);
-      host.classList.toggle("is-active", on);
-      host.setAttribute("aria-pressed", on ? "true" : "false");
-      const label = host.querySelector(".wishlist-label");
-      if (label) label.textContent = on ? "In your wishlist" : "Add to wishlist";
-    }
-    host.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      toggleWishlist(slug);
-      paint();
-    });
-    paint();
+  function paintOneWishlistEl(el, slug) {
+    const on = isWishlisted(slug);
+    el.classList.toggle("is-active", on);
+    el.setAttribute("aria-pressed", on ? "true" : "false");
+    const label = el.querySelector(".wishlist-label");
+    if (label) label.textContent = on ? "In your wishlist" : "Add to wishlist";
   }
-  GC.wireWishlistButton = wireWishlistButton;
+  // Repaints every wishlist heart currently in the DOM — called after the
+  // account's saved list loads/changes, rather than each button tracking
+  // its own state, so every instance of the same game (a tile AND the hero
+  // button) always agrees.
+  function repaintWishlistButtons() {
+    document.querySelectorAll("[data-wishlist-slug]").forEach((el) => paintOneWishlistEl(el, el.dataset.wishlistSlug));
+  }
+  document.addEventListener("gc:wishlist-change", repaintWishlistButtons);
 
-  // Paints every [data-wishlist-slug] button inside `scope` (used after a
-  // grid render, since tileHTML stamps out fresh buttons each time).
+  // Wires click handling + initial paint for every [data-wishlist-slug]
+  // element inside `scope` (a tile grid after render, or `document` for the
+  // one hero button on a game page — both the tile heart and the hero
+  // button share the same `data-wishlist-slug` attribute).
   function paintWishlistButtons(scope) {
     (scope || document).querySelectorAll("[data-wishlist-slug]").forEach((btn) => {
       const slug = btn.dataset.wishlistSlug;
       btn.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const on = toggleWishlist(slug);
-        btn.classList.toggle("is-active", on);
-        btn.setAttribute("aria-pressed", on ? "true" : "false");
+        toggleWishlist(slug);
       });
-      btn.classList.toggle("is-active", isWishlisted(slug));
-      btn.setAttribute("aria-pressed", isWishlisted(slug) ? "true" : "false");
+      paintOneWishlistEl(btn, slug);
     });
   }
   GC.paintWishlistButtons = paintWishlistButtons;
@@ -876,36 +1037,12 @@
   }
   GC.wireStarPicker = wireStarPicker;
 
-  // ---------- ratings & reviews (Supabase — shared, public) ----------
+  // ---------- ratings & reviews (Supabase — account-gated) ----------
   // Reads window.GC_CONFIG.supabaseUrl / supabasePublishableKey (config.js).
-  // The publishable/anon key is meant to be public — Supabase's own Row
-  // Level Security policies (not key secrecy) are what keep writes sane:
-  // anyone can insert a review (no accounts on this site), but only the
-  // "public read" + "public insert" policies exist, so nobody can edit or
-  // delete someone else's review from the client. Reviews are moderated
-  // by hand (Supabase dashboard / SQL) if something needs removing.
-  let supabaseClientPromise = null;
-  function loadSupabaseClient() {
-    if (supabaseClientPromise) return supabaseClientPromise;
-    const cfg = window.GC_CONFIG || {};
-    if (!cfg.supabaseUrl || !cfg.supabasePublishableKey) {
-      supabaseClientPromise = Promise.resolve(null);
-      return supabaseClientPromise;
-    }
-    supabaseClientPromise = new Promise((resolve) => {
-      if (window.supabase && window.supabase.createClient) {
-        resolve(window.supabase.createClient(cfg.supabaseUrl, cfg.supabasePublishableKey));
-        return;
-      }
-      const tag = document.createElement("script");
-      tag.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js";
-      tag.onload = () => resolve(window.supabase ? window.supabase.createClient(cfg.supabaseUrl, cfg.supabasePublishableKey) : null);
-      tag.onerror = () => resolve(null);
-      document.head.appendChild(tag);
-    });
-    return supabaseClientPromise;
-  }
-
+  // Anyone can read reviews (reviews_select_public), but posting one now
+  // requires a signed-in account (see GC.auth above) — one review per
+  // (game, account), enforced both by a DB unique index and by upserting
+  // on submit, so editing your rating overwrites it instead of duplicating.
   function timeAgo(iso) {
     const s = Math.max(1, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
     const units = [[31536000, "y"], [2592000, "mo"], [86400, "d"], [3600, "h"], [60, "m"]];
@@ -940,7 +1077,7 @@
   }
 
   // Renders the whole "Ratings & reviews" card into `container` for `game`,
-  // fetching existing reviews live and wiring the submit form.
+  // fetching existing reviews live and wiring the account-gated submit form.
   function renderReviewsSection(container, game) {
     if (!container) return;
     container.innerHTML = `
@@ -953,27 +1090,11 @@
         </div>
         ${officialScoreHTML(game)}
       </div>
-      <div class="review-form-wrap">
-        <p class="review-form-note">Rate it and leave a review — visible to everyone, no account needed.</p>
-        <form class="review-form" data-review-form>
-          <div class="review-form-row">
-            <div class="star-picker" data-star-picker></div>
-            <input type="text" name="reviewer_name" maxlength="40" placeholder="Your name (optional)" class="review-name-input">
-          </div>
-          <textarea name="review_text" maxlength="2000" rows="3" placeholder="What did you think? (optional)" class="review-text-input"></textarea>
-          <input type="text" name="website" class="review-honeypot" tabindex="-1" autocomplete="off" aria-hidden="true">
-          <div class="review-form-actions">
-            <button type="submit" class="btn-primary">Post review</button>
-            <span class="review-form-status" data-review-status></span>
-          </div>
-        </form>
-      </div>
+      <div class="review-form-wrap" data-review-form-wrap></div>
       <ul class="review-list" data-review-list><li class="review-loading">Loading reviews…</li></ul>
     `;
 
-    const picker = wireStarPicker(container.querySelector("[data-star-picker]"), 0);
-    const form = container.querySelector("[data-review-form]");
-    const status = container.querySelector("[data-review-status]");
+    const formWrap = container.querySelector("[data-review-form-wrap]");
     const list = container.querySelector("[data-review-list]");
     const avgEl = container.querySelector("[data-user-avg]");
     const countEl = container.querySelector("[data-user-count]");
@@ -991,17 +1112,46 @@
       list.innerHTML = reviews.map(reviewItemHTML).join("");
     }
 
-    loadSupabaseClient().then((client) => {
-      if (!client) {
-        list.innerHTML = `<li class="review-empty">Reviews are temporarily unavailable.</li>`;
-        form.querySelector("button[type=submit]").disabled = true;
-        return;
-      }
+    function loadReviews(client) {
       client.from("game_reviews").select("*").eq("game_slug", game.slug).order("created_at", { ascending: false })
         .then(({ data, error }) => {
           if (error) { list.innerHTML = `<li class="review-empty">Reviews are temporarily unavailable.</li>`; return; }
           paintReviews(data || []);
         });
+    }
+
+    function paintSignedOut() {
+      formWrap.innerHTML = `
+        <p class="review-form-note">Sign in to rate and review this game.</p>
+        <button type="button" class="btn-primary" data-review-signin>Sign in to review</button>
+      `;
+      formWrap.querySelector("[data-review-signin]").addEventListener("click", () => {
+        GC.auth.openGate("Sign in to rate and review " + (game.title || "this game") + ".");
+      });
+    }
+
+    function paintSignedInForm(client, session, existing) {
+      const defaultName = (session.user.email || "").split("@")[0];
+      formWrap.innerHTML = `
+        <p class="review-form-note">${existing ? "Update your rating and review." : "Rate it and leave a review — visible to everyone."}</p>
+        <form class="review-form" data-review-form>
+          <div class="review-form-row">
+            <div class="star-picker" data-star-picker></div>
+            <input type="text" name="reviewer_name" maxlength="40" placeholder="Your name (optional)" class="review-name-input" value="${escapeHtml(existing ? (existing.reviewer_name || "") : "")}">
+          </div>
+          <textarea name="review_text" maxlength="2000" rows="3" placeholder="What did you think? (optional)" class="review-text-input">${existing ? escapeHtml(existing.review_text || "") : ""}</textarea>
+          <input type="text" name="website" class="review-honeypot" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <div class="review-form-actions">
+            <button type="submit" class="btn-primary">${existing ? "Update review" : "Post review"}</button>
+            <span class="review-form-status" data-review-status></span>
+          </div>
+        </form>
+      `;
+
+      const starHost = formWrap.querySelector("[data-star-picker]");
+      let picker = wireStarPicker(starHost, existing ? Number(existing.rating) : 0);
+      const form = formWrap.querySelector("[data-review-form]");
+      const status = formWrap.querySelector("[data-review-status]");
 
       form.addEventListener("submit", (e) => {
         e.preventDefault();
@@ -1010,25 +1160,47 @@
         if (!rating) { status.textContent = "Pick a star rating first."; return; }
         const submitBtn = form.querySelector("button[type=submit]");
         submitBtn.disabled = true;
-        status.textContent = "Posting…";
-        client.from("game_reviews").insert({
+        status.textContent = existing ? "Updating…" : "Posting…";
+        client.from("game_reviews").upsert({
           game_slug: game.slug,
-          reviewer_name: (form.reviewer_name.value || "").trim() || "Anonymous",
+          user_id: session.user.id,
+          reviewer_name: (form.reviewer_name.value || "").trim() || defaultName,
           rating: rating,
           review_text: (form.review_text.value || "").trim() || null,
-        }).select().then(({ data, error }) => {
+        }, { onConflict: "game_slug,user_id" }).select().then(({ data, error }) => {
           submitBtn.disabled = false;
           if (error) { status.textContent = "Couldn't post — try again."; return; }
-          status.textContent = "Posted — thanks!";
-          form.reset();
-          picker.getValue = () => 0;
-          container.querySelector("[data-star-picker]").innerHTML = starsHTML(0, 26).replace(/star-slot/g, "star-slot pickable");
-          wireStarPicker(container.querySelector("[data-star-picker]"), 0, null);
-          client.from("game_reviews").select("*").eq("game_slug", game.slug).order("created_at", { ascending: false })
-            .then(({ data }) => paintReviews(data || []));
+          status.textContent = existing ? "Updated — thanks!" : "Posted — thanks!";
+          existing = (data && data[0]) || existing;
+          loadReviews(client);
         });
       });
+    }
+
+    function paintFormArea() {
+      getSupabaseClient().then((client) => {
+        if (!client) {
+          formWrap.innerHTML = `<p class="review-form-note">Reviews are temporarily unavailable.</p>`;
+          return;
+        }
+        const session = GC.auth.getSession();
+        if (!session) { paintSignedOut(); return; }
+        client.from("game_reviews").select("*").eq("game_slug", game.slug).eq("user_id", session.user.id).maybeSingle()
+          .then(({ data }) => paintSignedInForm(client, session, data || null));
+      });
+    }
+
+    getSupabaseClient().then((client) => {
+      if (!client) {
+        list.innerHTML = `<li class="review-empty">Reviews are temporarily unavailable.</li>`;
+        formWrap.innerHTML = "";
+        return;
+      }
+      loadReviews(client);
     });
+
+    paintFormArea();
+    GC.auth.onChange(paintFormArea);
   }
   GC.renderReviewsSection = renderReviewsSection;
 

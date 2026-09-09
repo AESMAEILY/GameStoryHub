@@ -19,12 +19,14 @@
     // "opening soon" note instead of submitting anywhere.
     buttondownUsername: "esmaeily",
 
-    // Supabase project URL + publishable ("anon") key, used for the public
-    // ratings/reviews backend (js/site.js renderReviewsSection). The
-    // publishable key is safe to expose client-side by design — it is
-    // access-controlled by the game_reviews table's Row Level Security
-    // policies, not by keeping this value secret. Leave either "" to make
-    // the reviews section show "temporarily unavailable" instead of erroring.
+    // Supabase project URL + publishable ("anon") key. Powers both the
+    // ratings/reviews backend (js/site.js renderReviewsSection) and the
+    // account-gated wishlist (js/site.js GC.wishlist) — both require a
+    // signed-in account (email magic link) to write. The publishable key
+    // is safe to expose client-side by design — access is controlled by
+    // each table's Row Level Security policies, not by keeping this value
+    // secret. Leave either "" to make reviews/wishlist show "temporarily
+    // unavailable" instead of erroring.
     supabaseUrl: "https://cmzizvvqawgqxajqdzey.supabase.co",
     supabasePublishableKey: "sb_publishable_1eDUbCmz8sf5SPmJmTTn6g_gldK6iAN",
   };
