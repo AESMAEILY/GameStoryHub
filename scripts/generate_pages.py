@@ -32,6 +32,10 @@ from genre_icons import icon_for  # noqa: E402
 LANG_LABELS = {"en": "EN", "de": "DE", "es": "ES", "fr": "FR"}
 LANG_NAMES = {"en": "English", "de": "German", "es": "Spanish", "fr": "French"}
 
+SITE_URL = "https://aesmaeily.github.io/GameStoryHub"
+SITE_NAME = "Digi-games"
+DEFAULT_OG_IMAGE = SITE_URL + "/assets/og-default.png"
+
 FAVICON = ("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E"
            "%3Crect width='100' height='100' rx='26' fill='%23{accent}'/%3E"
            "%3Ctext x='50' y='65' font-size='42' font-weight='700' text-anchor='middle' font-family='Arial' fill='%2306060a'%3E"
@@ -141,19 +145,55 @@ def genre_chips(genres):
     return "".join(f'<span class="chip">{esc(g)}</span>' for g in genres)
 
 
+def json_ld_script(obj):
+    # Standard JSON-LD safety: never let a literal "</" close the <script>
+    # tag early (titles/lore text are free-form and could contain it).
+    raw = json.dumps(obj, ensure_ascii=False, indent=None)
+    raw = raw.replace("</", "<\\/")
+    return f'<script type="application/ld+json">{raw}</script>'
+
+
+def game_json_ld(game, page_url, image_url):
+    return json_ld_script({
+        "@context": "https://schema.org",
+        "@type": "VideoGame",
+        "name": game["title"],
+        "description": game["tagline"],
+        "url": page_url,
+        "image": image_url,
+        "datePublished": game["releaseDate"],
+        "genre": game["genres"],
+        "gamePlatform": game["platforms"],
+        "author": {"@type": "Organization", "name": game["developer"]},
+        "publisher": {"@type": "Organization", "name": game["publisher"]},
+    })
+
+
 PAGE_TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{title} — Walkthrough &amp; Story | Digi-games</title>
-<meta name="description" content="{tagline} Top YouTube walkthrough, release info, and story for {title} on Digi-games.">
+<meta name="description" content="{meta_description}">
+<link rel="canonical" href="{canonical_url}">
 <link rel="icon" href="{favicon}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/styles.css">
 <style>:root {{ --accent: {accent}; --accent2: {accent2}; }}</style>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Digi-games">
+<meta property="og:title" content="{title} — Walkthrough &amp; Story | Digi-games">
+<meta property="og:description" content="{meta_description}">
+<meta property="og:url" content="{canonical_url}">
+<meta property="og:image" content="{og_image}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{title} — Walkthrough &amp; Story | Digi-games">
+<meta name="twitter:description" content="{meta_description}">
+<meta name="twitter:image" content="{og_image}">
+{json_ld}
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
@@ -240,6 +280,9 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
       </div>
 
       <aside>
+        <div class="side-card" id="price-card">
+          <p class="price-loading">Checking current prices…</p>
+        </div>
         <div class="side-card">
           <h3>Platforms</h3>
           <div class="platform-tags">{platform_tags}</div>
@@ -270,14 +313,28 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
 </main>
 
 <footer class="site-footer">
-  <div class="container">
-    <span>Digi-games — a fan-made hub for walkthroughs, story, and everything you need to play. Videos embedded via YouTube; all game titles and art are property of their respective publishers.</span>
-    <span>&copy; 2026 Alireza Esmaeily. All rights reserved. This site's design and code are proprietary — see <a href="https://github.com/AESMAEILY/GameStoryHub/blob/main/LICENSE" target="_blank" rel="noopener">LICENSE</a>.</span>
-    <span><a href="../browse.html">Browse all games</a></span>
+  <div class="container footer-grid">
+    <div class="footer-newsletter">
+      <div class="footer-newsletter-copy">
+        <strong>Get new walkthroughs &amp; best-price alerts</strong>
+        <span>One email when we add a game or spot a great deal. No spam, unsubscribe anytime.</span>
+      </div>
+      <form class="footer-newsletter-form" id="newsletter-form" data-note-id="newsletter-note">
+        <input type="email" name="email" id="newsletter-email" placeholder="you@email.com" required aria-label="Email address">
+        <button type="submit" class="btn-primary">Subscribe</button>
+      </form>
+      <p class="footer-newsletter-note" id="newsletter-note" hidden></p>
+    </div>
+    <div class="footer-bottom">
+      <span>Digi-games — a fan-made hub for walkthroughs, story, and everything you need to play. Videos embedded via YouTube; all game titles and art are property of their respective publishers.</span>
+      <span>&copy; 2026 Alireza Esmaeily. All rights reserved. This site's design and code are proprietary — see <a href="https://github.com/AESMAEILY/GameStoryHub/blob/main/LICENSE" target="_blank" rel="noopener">LICENSE</a>.</span>
+      <span><a href="../browse.html">Browse all games</a></span>
+    </div>
   </div>
 </footer>
 
 <script>window.GC_ROOT = "../";</script>
+<script src="../js/config.js"></script>
 <script src="../js/site.js"></script>
 <script>
 (function () {{
@@ -285,6 +342,11 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
   var PRIMARY_GENRE = "{genre_primary_js}";
 
   GameCodex.initDockNav();
+  GameCodex.wireNewsletterForm(document.getElementById("newsletter-form"));
+  GameCodex.renderPriceCard(document.getElementById("price-card"), {{
+    title: "{title_js}",
+    platforms: {platforms_js},
+  }});
 
   document.querySelectorAll(".lang-btn").forEach(function (btn) {{
     btn.addEventListener("click", function () {{
@@ -338,8 +400,15 @@ def cover_html(game):
     )
 
 
+def js_str(s):
+    return s.replace("\\", "\\\\").replace('"', '\\"')
+
+
 def build_page(game):
     accent = game["accent"].lstrip("#")
+    canonical_url = f"{SITE_URL}/games/{game['slug']}.html"
+    og_image = f"{SITE_URL}/{game['poster']}" if game.get("poster") else DEFAULT_OG_IMAGE
+    meta_description = esc(f"{game['tagline']} Top YouTube walkthrough, release info, and story for {game['title']} on Digi-games.")
     return PAGE_TEMPLATE.format(
         title=esc(game["title"]),
         tagline=esc(game["tagline"]),
@@ -364,6 +433,12 @@ def build_page(game):
         genre_primary=esc(game["genres"][0]),
         genre_primary_js=game["genres"][0].replace('"', '\\"'),
         slug=game["slug"],
+        meta_description=meta_description,
+        canonical_url=canonical_url,
+        og_image=og_image,
+        json_ld=game_json_ld(game, canonical_url, og_image),
+        title_js=js_str(game["title"]),
+        platforms_js=json.dumps(game["platforms"]),
     )
 
 

@@ -81,10 +81,23 @@ __CSS__
 <main id="main"><div id="app"></div></main>
 
 <footer class="site-footer">
-  <div class="container">
-    <span>Digi-games &mdash; a fan-made hub for walkthroughs, story, and everything you need to play. Videos embedded via YouTube; all game titles and art are property of their respective publishers.</span>
-    <span>&copy; 2026 Alireza Esmaeily. All rights reserved. Site design and code are proprietary.</span>
-    <span><a href="javascript:void(0)" data-nav="/browse">Browse all games</a></span>
+  <div class="container footer-grid">
+    <div class="footer-newsletter">
+      <div class="footer-newsletter-copy">
+        <strong>Get new walkthroughs &amp; best-price alerts</strong>
+        <span>One email when we add a game or spot a great deal. No spam, unsubscribe anytime.</span>
+      </div>
+      <form class="footer-newsletter-form" id="newsletter-form" data-note-id="newsletter-note">
+        <input type="email" name="email" id="newsletter-email" placeholder="you@email.com" required aria-label="Email address">
+        <button type="submit" class="btn-primary">Subscribe</button>
+      </form>
+      <p class="footer-newsletter-note" id="newsletter-note" hidden></p>
+    </div>
+    <div class="footer-bottom">
+      <span>Digi-games &mdash; a fan-made hub for walkthroughs, story, and everything you need to play. Videos embedded via YouTube; all game titles and art are property of their respective publishers.</span>
+      <span>&copy; 2026 Alireza Esmaeily. All rights reserved. Site design and code are proprietary.</span>
+      <span><a href="javascript:void(0)" data-nav="/browse">Browse all games</a></span>
+    </div>
   </div>
 </footer>
 
@@ -160,6 +173,35 @@ __GAMES_JSON__
       frag.appendChild(s);
     }
     container.appendChild(frag);
+  }
+
+  // Price comparison (mirrors GC.renderPriceCard in js/site.js) is scoped
+  // out of this preview bundle on purpose: the Artifact/inline-preview
+  // sandbox this file is often viewed in doesn't allow arbitrary outbound
+  // fetch() calls, so a live CheapShark lookup here would just hang or
+  // silently fail. The real multi-page site (js/site.js) has the full
+  // live version -- this shows the same card shape with a note instead.
+  function renderPriceCardPreview(container, game) {
+    if (!container) return;
+    var isPc = game.platforms.some(function (p) {
+      var s = p.toLowerCase();
+      return s.indexOf("pc") !== -1 || s.indexOf("mac") !== -1;
+    });
+    container.innerHTML = '<h3>Where to buy</h3><p class="price-note">' +
+      (isPc
+        ? "Live PC price comparison (via CheapShark) runs on the deployed site &mdash; not simulated in this local preview."
+        : "Live price comparison currently covers PC storefronts only.") +
+      '</p>';
+  }
+
+  // Newsletter subscribe form (mirrors GC.wireNewsletterForm in js/site.js).
+  function wireNewsletterFormPreview(form) {
+    if (!form) return;
+    var note = document.getElementById(form.getAttribute("data-note-id") || "");
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (note) { note.hidden = false; note.textContent = "Preview only — connect a Buttondown username in js/config.js on the real site."; }
+    });
   }
 
   var GENRE_ICONS = {
@@ -830,6 +872,7 @@ __GAMES_JSON__
             creatorsHTML(game) +
           '</div>' +
           '<aside>' +
+            '<div class="side-card" id="price-card"></div>' +
             '<div class="side-card"><h3>Platforms</h3><div class="platform-tags">' + game.platforms.map(function (p) { return '<span>' + escapeHtml(p) + '</span>'; }).join("") + '</div></div>' +
             '<div class="side-card"><h3>Details</h3><ul>' +
               '<li><span>Genre</span><strong>' + escapeHtml(game.genres[0]) + '</strong></li>' +
@@ -861,6 +904,7 @@ __GAMES_JSON__
     renderGrid(document.getElementById("related-grid"), related);
     wireTilt(document.querySelector(".game-hero-grid"));
     mountYouTubePlayer("yt-player-main", game.youtube.id);
+    renderPriceCardPreview(document.getElementById("price-card"), game);
     window.scrollTo(0, 0);
   }
 
@@ -931,6 +975,7 @@ __GAMES_JSON__
   var dockNav = initDockNav();
   window.addEventListener("hashchange", route);
   wireSearchWidget(document.getElementById("nav-search-input"), document.getElementById("nav-search-results"));
+  wireNewsletterFormPreview(document.getElementById("newsletter-form"));
   route();
 })();
 </script>
