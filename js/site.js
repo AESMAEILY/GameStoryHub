@@ -103,6 +103,17 @@
           <span class="poster-badge"><span class="tile-initial">${initials(game.title)}</span></span>`;
   }
 
+  // Compact critic-score badge shown right next to the title on every tile
+  // (browse grid, home trending, wishlist, related games) — the official
+  // score, since that's the one number every game actually has.
+  function tileScoreHTML(game) {
+    const os = game.officialScore;
+    if (!os || typeof os.value !== "number") return "";
+    return `<span class="tile-score" title="Official critic score: ${Math.round(os.value)}/100 via ${escapeHtml(os.source || "critics")}">
+      <svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.8-6.2 3.8 1.6-7-5.4-4.8 7.1-.7z"/></svg>${Math.round(os.value)}
+    </span>`;
+  }
+
   function tileHTML(game) {
     const yt = game.youtube;
     return `
@@ -119,9 +130,12 @@
       </a>
       <button type="button" class="tile-wishlist" data-wishlist-slug="${game.slug}" aria-label="Add ${escapeHtml(game.title)} to wishlist" aria-pressed="false">${HEART_ICON}</button>
       <div class="tile-body">
-        <a href="${gamePath(game.slug)}">
-          <h3 class="tile-title">${escapeHtml(game.title)}</h3>
-        </a>
+        <div class="tile-title-row">
+          <a href="${gamePath(game.slug)}">
+            <h3 class="tile-title">${escapeHtml(game.title)}</h3>
+          </a>
+          ${tileScoreHTML(game)}
+        </div>
         <div class="tile-meta">
           <span>${year(game.releaseDate)}</span>
           <span class="dot">&middot;</span>
@@ -1063,52 +1077,71 @@
     </li>`;
   }
 
-  function officialScoreHTML(game) {
+  // IMDb-style rating pills — rendered into the game-page hero ("game info"),
+  // not a separate section. The official (critic) score is static build-time
+  // data; the player pill is filled in live once reviews load.
+  function officialRatingPillHTML(game) {
     const os = game.officialScore;
     if (!os || typeof os.value !== "number") {
-      return `<div class="score-block score-block-empty"><span class="score-label">Official score</span><span class="score-empty-note">Not added yet</span></div>`;
+      return `<div class="rating-pill rating-pill-official rating-pill-empty">
+        <span class="rating-pill-value">–</span>
+        <span class="rating-pill-meta"><strong>Critic score</strong><span>Not added yet</span></span>
+      </div>`;
     }
-    const url = os.url ? ` <a href="${escapeHtml(os.url)}" target="_blank" rel="noopener" class="score-source-link">via ${escapeHtml(os.source || "critics")} ↗</a>` : ` <span class="score-source">via ${escapeHtml(os.source || "critics")}</span>`;
-    return `<div class="score-block">
-      <span class="score-label">Official score</span>
-      <span class="score-big">${Math.round(os.value)}<span class="score-max">/100</span></span>
-      ${url}
+    const src = escapeHtml(os.source || "critics");
+    const inner = `
+      <svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.8-6.2 3.8 1.6-7-5.4-4.8 7.1-.7z"/></svg>
+      <span class="rating-pill-value">${Math.round(os.value)}</span>
+      <span class="rating-pill-meta"><strong>Critic score</strong><span>${src}${os.url ? " ↗" : ""}</span></span>`;
+    return os.url
+      ? `<a class="rating-pill rating-pill-official" href="${escapeHtml(os.url)}" target="_blank" rel="noopener" title="Official critic score, via ${src}">${inner}</a>`
+      : `<div class="rating-pill rating-pill-official" title="Official critic score, via ${src}">${inner}</div>`;
+  }
+
+  function playerRatingPillHTML(avg, count) {
+    if (!count) {
+      return `<div class="rating-pill rating-pill-player rating-pill-empty">
+        <span class="rating-pill-value">–</span>
+        <span class="rating-pill-meta"><strong>Player rating</strong><span>No ratings yet</span></span>
+      </div>`;
+    }
+    return `<div class="rating-pill rating-pill-player">
+      <span class="rating-pill-value">${avg.toFixed(1)}</span>
+      <span class="rating-pill-meta"><strong>Player rating</strong><span>${count} ${count === 1 ? "rating" : "ratings"}</span></span>
     </div>`;
   }
 
-  // Renders the whole "Ratings & reviews" card into `container` for `game`,
-  // fetching existing reviews live and wiring the account-gated submit form.
-  function renderReviewsSection(container, game) {
+  // Renders ratings + reviews for `game`: the score pills go into `heroEl`
+  // (the hero "game info" block, IMDb-style, right next to the title/wishlist
+  // button) and the write/read-review UI goes into `container`, which is now
+  // rendered as one of the sidebar "game info" cards rather than a standalone
+  // full-width section further down the page.
+  function renderReviewsSection(container, game, heroEl) {
     if (!container) return;
+
+    function paintHeroRatings(avg, count) {
+      if (!heroEl) return;
+      heroEl.innerHTML = officialRatingPillHTML(game) + playerRatingPillHTML(avg, count);
+    }
+    paintHeroRatings(0, 0);
+
     container.innerHTML = `
       <h2>Ratings &amp; reviews</h2>
-      <div class="reviews-summary">
-        <div class="score-block">
-          <span class="score-label">Player rating</span>
-          <span class="score-big" data-user-avg>–</span>
-          <span class="score-source" data-user-count>No ratings yet</span>
-        </div>
-        ${officialScoreHTML(game)}
-      </div>
       <div class="review-form-wrap" data-review-form-wrap></div>
       <ul class="review-list" data-review-list><li class="review-loading">Loading reviews…</li></ul>
     `;
 
     const formWrap = container.querySelector("[data-review-form-wrap]");
     const list = container.querySelector("[data-review-list]");
-    const avgEl = container.querySelector("[data-user-avg]");
-    const countEl = container.querySelector("[data-user-count]");
 
     function paintReviews(reviews) {
       if (reviews.length === 0) {
         list.innerHTML = `<li class="review-empty">No reviews yet — be the first.</li>`;
-        avgEl.textContent = "–";
-        countEl.textContent = "No ratings yet";
+        paintHeroRatings(0, 0);
         return;
       }
       const avg = reviews.reduce((s, r) => s + Number(r.rating), 0) / reviews.length;
-      avgEl.innerHTML = avg.toFixed(1) + `<span class="score-max">/5</span>`;
-      countEl.textContent = reviews.length + (reviews.length === 1 ? " rating" : " ratings");
+      paintHeroRatings(avg, reviews.length);
       list.innerHTML = reviews.map(reviewItemHTML).join("");
     }
 
