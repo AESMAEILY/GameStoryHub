@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://aesmaeily.github.io/GameStoryHub/sitemap.xml
