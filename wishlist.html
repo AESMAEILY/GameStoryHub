@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Wishlist — Digi-games</title>
+<meta name="description" content="Games you've saved to play later on Digi-games — saved privately in your own browser.">
+<link rel="canonical" href="https://aesmaeily.github.io/GameStoryHub/wishlist.html">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='26' fill='%237c8cff'/%3E%3Ctext x='50' y='65' font-size='42' font-weight='700' text-anchor='middle' font-family='Arial' fill='%2306060a'%3EDG%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<style>:root { --accent: #7c8cff; --accent2: #3ee6c4; }</style>
+<meta name="robots" content="noindex">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Digi-games">
+<meta property="og:title" content="Your Wishlist — Digi-games">
+<meta property="og:description" content="Games you've saved to play later on Digi-games.">
+<meta property="og:url" content="https://aesmaeily.github.io/GameStoryHub/wishlist.html">
+<meta property="og:image" content="https://aesmaeily.github.io/GameStoryHub/assets/og-default.png">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<nav class="dock-nav" id="dock-nav" aria-label="Primary">
+  <a class="dock-brand" href="index.html" aria-label="Digi-games home">DG</a>
+  <div class="dock-links">
+    <div class="dock-indicator" id="dock-indicator"></div>
+    <a href="index.html" class="dock-link" data-route="home">
+      <svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10.5L12 4l9 6.5"/><path d="M5 9.5V20h14V9.5"/><path d="M9 20v-6h6v6"/></svg>
+      <span class="dock-label">Home</span>
+    </a>
+    <a href="browse.html" class="dock-link" data-route="browse">
+      <svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg>
+      <span class="dock-label">Browse</span>
+    </a>
+    <a href="wishlist.html" class="dock-link active" data-route="wishlist">
+      <svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7.2-4.6-10-9.2C.4 8.6 2 5 5.6 5c2 0 3.4 1 4.9 2.9C11.9 6 13.3 5 15.3 5 19 5 20.6 8.6 19 11.8 16.8 16.4 12 21 12 21z"/></svg>
+      <span class="dock-label">Wishlist</span>
+    </a>
+    <button type="button" class="dock-link dock-search-toggle" id="dock-search-toggle" aria-label="Search games" aria-haspopup="dialog">
+      <svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="dock-label">Search</span>
+    </button>
+  </div>
+</nav>
+
+<div class="search-overlay" id="search-overlay" role="dialog" aria-modal="true" aria-label="Search games">
+  <div class="search-overlay-backdrop" id="search-overlay-backdrop"></div>
+  <div class="search-overlay-panel">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+    <input type="search" id="nav-search-input" placeholder="Search games…" aria-label="Search games">
+    <button type="button" class="search-overlay-close" id="search-overlay-close" aria-label="Close search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+    <div class="nav-search-results" id="nav-search-results"></div>
+  </div>
+</div>
+
+<main id="main">
+<section class="section" style="padding-bottom:0;">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <h2>Your wishlist</h2>
+        <p id="wishlist-count">Saved privately in this browser — nobody else sees it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:16px;">
+  <div class="container">
+    <div class="grid" id="wishlist-grid"></div>
+  </div>
+</section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div class="footer-newsletter">
+      <div class="footer-newsletter-copy">
+        <strong>Get new walkthroughs &amp; best-price alerts</strong>
+        <span>One email when we add a game or spot a great deal. No spam, unsubscribe anytime.</span>
+      </div>
+      <form class="footer-newsletter-form" id="newsletter-form" data-note-id="newsletter-note">
+        <input type="email" name="email" id="newsletter-email" placeholder="you@email.com" required aria-label="Email address">
+        <button type="submit" class="btn-primary">Subscribe</button>
+      </form>
+      <p class="footer-newsletter-note" id="newsletter-note" hidden></p>
+    </div>
+    <div class="footer-bottom">
+      <span>Digi-games — a fan-made hub for walkthroughs, story, and everything you need to play. Videos embedded via YouTube; all game titles and art are property of their respective publishers.</span>
+      <span>&copy; 2026 Alireza Esmaeily. All rights reserved. This site's design and code are proprietary — see <a href="https://github.com/AESMAEILY/GameStoryHub/blob/main/LICENSE" target="_blank" rel="noopener">LICENSE</a>.</span>
+      <span><a href="index.html">Back to home</a></span>
+    </div>
+  </div>
+</footer>
+
+<script>window.GC_ROOT = "./";</script>
+<script src="js/config.js"></script>
+<script src="js/site.js"></script>
+<script>
+(function () {
+  GameCodex.initDockNav();
+  GameCodex.wireNewsletterForm(document.getElementById("newsletter-form"));
+
+  var grid = document.getElementById("wishlist-grid");
+  var countEl = document.getElementById("wishlist-count");
+
+  function emptyStateHTML() {
+    return '<div class="wishlist-empty">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7.2-4.6-10-9.2C.4 8.6 2 5 5.6 5c2 0 3.4 1 4.9 2.9C11.9 6 13.3 5 15.3 5 19 5 20.6 8.6 19 11.8 16.8 16.4 12 21 12 21z"/></svg>' +
+      '<p><strong>Nothing saved yet.</strong><br>Tap the heart on any game to add it here.</p>' +
+      '<a class="btn-primary" href="browse.html" style="display:inline-block;padding:10px 20px;">Browse games</a>' +
+      '</div>';
+  }
+
+  function render() {
+    var saved = GameCodex.wishlist.get();
+    GameCodex.ready.then(function (games) {
+      var mine = games.filter(function (g) { return saved.indexOf(g.slug) !== -1; });
+      countEl.textContent = mine.length === 0
+        ? "Saved privately in this browser — nobody else sees it."
+        : mine.length + (mine.length === 1 ? " game saved" : " games saved") + " — private to this browser.";
+      if (mine.length === 0) {
+        grid.innerHTML = emptyStateHTML();
+        return;
+      }
+      GameCodex.renderGrid(grid, mine);
+    });
+  }
+
+  document.addEventListener("gc:wishlist-change", render);
+  render();
+
+  GameCodex.ready.then(function () {
+    GameCodex.wireSearchWidget(
+      document.getElementById("nav-search-input"),
+      document.getElementById("nav-search-results")
+    );
+  });
+})();
+</script>
+</body>
+</html>
