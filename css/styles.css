@@ -333,6 +333,87 @@ body {
 .search-overlay-close svg { width: 14px; height: 14px; }
 .search-overlay-close:hover { color: var(--text); background: color-mix(in srgb, var(--danger) 25%, var(--bg-elev-2)); }
 
+/* -------- account sign-in overlay (email magic link) -------- */
+.auth-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity .22s ease, visibility 0s linear .22s;
+}
+.auth-overlay.open {
+  visibility: visible;
+  opacity: 1;
+  transition: opacity .22s ease;
+}
+.auth-overlay-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(4,4,9,0.72);
+  backdrop-filter: blur(6px);
+}
+.auth-overlay-panel {
+  position: relative;
+  width: min(380px, calc(100vw - 48px));
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+  padding: 28px 24px 24px;
+  transform: translateY(-16px) scale(0.97);
+  transition: transform .25s cubic-bezier(.2,.8,.3,1);
+}
+.auth-overlay.open .auth-overlay-panel { transform: translateY(0) scale(1); }
+.auth-overlay-panel h3 { margin: 0 0 8px; font-size: 1.1rem; font-family: var(--font-display); }
+.auth-context-msg { margin: 0 0 16px; font-size: 0.82rem; color: var(--text-dim); }
+.auth-email-form { display: flex; gap: 8px; flex-wrap: wrap; }
+.auth-email-form input {
+  flex: 1;
+  min-width: 180px;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.85rem;
+}
+.auth-email-form input:focus { border-color: var(--accent); outline: none; }
+.auth-email-form button { padding: 10px 18px; border-radius: var(--radius-sm); border: none; font-size: 0.85rem; white-space: nowrap; }
+.auth-status { margin: 10px 0 0; font-size: 0.78rem; color: var(--accent2); min-height: 1em; }
+.auth-current-email { margin: 0 0 16px; font-size: 0.88rem; color: var(--text); font-weight: 600; word-break: break-all; }
+.auth-signout-btn {
+  padding: 9px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--bg-elev-2);
+  color: var(--text);
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color .15s ease, background .15s ease;
+}
+.auth-signout-btn:hover { border-color: color-mix(in srgb, var(--danger) 40%, var(--line)); }
+.auth-overlay-close {
+  position: absolute;
+  right: 10px; top: 10px;
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  border: none;
+  background: var(--bg-elev-2);
+  color: var(--text-dim);
+  display: grid; place-items: center;
+  cursor: pointer;
+  transition: color .15s ease, background .15s ease;
+}
+.auth-overlay-close svg { width: 14px; height: 14px; }
+.auth-overlay-close:hover { color: var(--text); background: color-mix(in srgb, var(--danger) 25%, var(--bg-elev-2)); }
+
 .nav-search-results {
   max-height: 50vh;
   overflow-y: auto;
@@ -1655,6 +1736,7 @@ body {
   margin-bottom: 22px;
 }
 .review-form-note { margin: 0 0 12px; font-size: 0.82rem; color: var(--text-dim); }
+.review-form-wrap > .btn-primary { padding: 10px 20px; border-radius: 999px; border: none; font-size: 0.85rem; }
 .review-form { display: flex; flex-direction: column; gap: 10px; }
 .review-form-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
 .review-name-input, .review-text-input {
