@@ -18,6 +18,15 @@
     // Leave "" and the footer subscribe form shows an honest
     // "opening soon" note instead of submitting anywhere.
     buttondownUsername: "esmaeily",
+
+    // Supabase project URL + publishable ("anon") key, used for the public
+    // ratings/reviews backend (js/site.js renderReviewsSection). The
+    // publishable key is safe to expose client-side by design — it is
+    // access-controlled by the game_reviews table's Row Level Security
+    // policies, not by keeping this value secret. Leave either "" to make
+    // the reviews section show "temporarily unavailable" instead of erroring.
+    supabaseUrl: "https://cmzizvvqawgqxajqdzey.supabase.co",
+    supabasePublishableKey: "sb_publishable_1eDUbCmz8sf5SPmJmTTn6g_gldK6iAN",
   };
 
   // ---- GA4 bootstrap (only runs if a Measurement ID is set above) ----

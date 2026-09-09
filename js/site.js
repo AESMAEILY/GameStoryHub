@@ -117,6 +117,7 @@
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
         </span>
       </a>
+      <button type="button" class="tile-wishlist" data-wishlist-slug="${game.slug}" aria-label="Add ${escapeHtml(game.title)} to wishlist" aria-pressed="false">${HEART_ICON}</button>
       <div class="tile-body">
         <a href="${gamePath(game.slug)}">
           <h3 class="tile-title">${escapeHtml(game.title)}</h3>
@@ -140,6 +141,7 @@
     wireHoverPreviews(container);
     wireTilt(container);
     wireReveal(container);
+    paintWishlistButtons(container);
   }
   GC.renderGrid = renderGrid;
   GC.genreIcon = genreIcon;
@@ -753,6 +755,282 @@
     });
   }
   GC.wireNewsletterForm = wireNewsletterForm;
+
+  // ---------- wishlist (personal, localStorage — no account needed) ----------
+  // A visitor's wishlist is theirs alone: saved in their own browser, not
+  // synced anywhere, not visible to anyone else. That's a deliberate scope
+  // choice — see the project notes for why this differs from ratings/reviews,
+  // which ARE shared publicly via Supabase below.
+  const WISHLIST_KEY = "gc_wishlist";
+  function getWishlist() {
+    try {
+      const raw = localStorage.getItem(WISHLIST_KEY);
+      const arr = raw ? JSON.parse(raw) : [];
+      return Array.isArray(arr) ? arr : [];
+    } catch (e) { return []; }
+  }
+  function isWishlisted(slug) { return getWishlist().indexOf(slug) !== -1; }
+  function setWishlist(list) {
+    try { localStorage.setItem(WISHLIST_KEY, JSON.stringify(list)); } catch (e) { /* storage unavailable */ }
+  }
+  function toggleWishlist(slug) {
+    const list = getWishlist();
+    const i = list.indexOf(slug);
+    if (i === -1) { list.push(slug); } else { list.splice(i, 1); }
+    setWishlist(list);
+    document.dispatchEvent(new CustomEvent("gc:wishlist-change", { detail: { slug, on: i === -1 } }));
+    return i === -1; // true = now wishlisted
+  }
+  GC.wishlist = { get: getWishlist, has: isWishlisted, toggle: toggleWishlist };
+
+  const HEART_ICON = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.2-4.6-10-9.2C.4 8.6 2 5 5.6 5c2 0 3.4 1 4.9 2.9C11.9 6 13.3 5 15.3 5 19 5 20.6 8.6 19 11.8 16.8 16.4 12 21 12 21z"/></svg>';
+
+  // Renders/attaches a heart toggle button to `host` for `slug`.
+  // Used on tile cards (compact, top-right) and the game-hero title block
+  // (labeled, "Add to wishlist" / "In your wishlist").
+  function wireWishlistButton(host, slug) {
+    if (!host) return;
+    function paint() {
+      const on = isWishlisted(slug);
+      host.classList.toggle("is-active", on);
+      host.setAttribute("aria-pressed", on ? "true" : "false");
+      const label = host.querySelector(".wishlist-label");
+      if (label) label.textContent = on ? "In your wishlist" : "Add to wishlist";
+    }
+    host.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleWishlist(slug);
+      paint();
+    });
+    paint();
+  }
+  GC.wireWishlistButton = wireWishlistButton;
+
+  // Paints every [data-wishlist-slug] button inside `scope` (used after a
+  // grid render, since tileHTML stamps out fresh buttons each time).
+  function paintWishlistButtons(scope) {
+    (scope || document).querySelectorAll("[data-wishlist-slug]").forEach((btn) => {
+      const slug = btn.dataset.wishlistSlug;
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const on = toggleWishlist(slug);
+        btn.classList.toggle("is-active", on);
+        btn.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+      btn.classList.toggle("is-active", isWishlisted(slug));
+      btn.setAttribute("aria-pressed", isWishlisted(slug) ? "true" : "false");
+    });
+  }
+  GC.paintWishlistButtons = paintWishlistButtons;
+
+  // ---------- star rating (5 stars, half-star precision) ----------
+  // Renders a row of 5 stars representing `value` (0–5, 0.5 steps) as an
+  // accessible, non-interactive display. Half-fill is done with two stacked
+  // SVGs per star (outline + a clipped filled copy).
+  function starsHTML(value, size) {
+    size = size || 16;
+    const v = Math.max(0, Math.min(5, value || 0));
+    let out = "";
+    for (let i = 1; i <= 5; i++) {
+      const fill = Math.max(0, Math.min(1, v - (i - 1))); // 0, 0.5, or 1
+      out += `<span class="star-slot" style="width:${size}px;height:${size}px">
+        <svg class="star-outline" viewBox="0 0 24 24" width="${size}" height="${size}"><path d="M12 2.5l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.8-6.2 3.8 1.6-7-5.4-4.8 7.1-.7z"/></svg>
+        <svg class="star-fill" viewBox="0 0 24 24" width="${size}" height="${size}" style="clip-path:inset(0 ${(1 - fill) * 100}% 0 0)"><path d="M12 2.5l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.8-6.2 3.8 1.6-7-5.4-4.8 7.1-.7z"/></svg>
+      </span>`;
+    }
+    return out;
+  }
+  GC.starsHTML = starsHTML;
+
+  // Interactive star picker (click/keyboard to set a 0.5–5 rating). Calls
+  // onChange(value) whenever the selection changes. Returns { getValue }.
+  function wireStarPicker(host, initial, onChange) {
+    let value = initial || 0;
+    host.innerHTML = starsHTML(0, 26).replace(/star-slot/g, "star-slot pickable");
+    const slots = Array.from(host.querySelectorAll(".star-slot"));
+    function paint() {
+      slots.forEach((slot, i) => {
+        const fill = Math.max(0, Math.min(1, value - i));
+        slot.querySelector(".star-fill").style.clipPath = `inset(0 ${(1 - fill) * 100}% 0 0)`;
+      });
+    }
+    slots.forEach((slot, i) => {
+      slot.setAttribute("role", "button");
+      slot.setAttribute("tabindex", "0");
+      slot.addEventListener("click", (e) => {
+        const rect = slot.getBoundingClientRect();
+        const half = (e.clientX - rect.left) < rect.width / 2;
+        value = i + (half ? 0.5 : 1);
+        paint();
+        if (onChange) onChange(value);
+      });
+      slot.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowRight") { value = Math.min(5, value + 0.5); paint(); if (onChange) onChange(value); }
+        if (e.key === "ArrowLeft") { value = Math.max(0.5, value - 0.5); paint(); if (onChange) onChange(value); }
+      });
+    });
+    paint();
+    return { getValue: () => value };
+  }
+  GC.wireStarPicker = wireStarPicker;
+
+  // ---------- ratings & reviews (Supabase — shared, public) ----------
+  // Reads window.GC_CONFIG.supabaseUrl / supabasePublishableKey (config.js).
+  // The publishable/anon key is meant to be public — Supabase's own Row
+  // Level Security policies (not key secrecy) are what keep writes sane:
+  // anyone can insert a review (no accounts on this site), but only the
+  // "public read" + "public insert" policies exist, so nobody can edit or
+  // delete someone else's review from the client. Reviews are moderated
+  // by hand (Supabase dashboard / SQL) if something needs removing.
+  let supabaseClientPromise = null;
+  function loadSupabaseClient() {
+    if (supabaseClientPromise) return supabaseClientPromise;
+    const cfg = window.GC_CONFIG || {};
+    if (!cfg.supabaseUrl || !cfg.supabasePublishableKey) {
+      supabaseClientPromise = Promise.resolve(null);
+      return supabaseClientPromise;
+    }
+    supabaseClientPromise = new Promise((resolve) => {
+      if (window.supabase && window.supabase.createClient) {
+        resolve(window.supabase.createClient(cfg.supabaseUrl, cfg.supabasePublishableKey));
+        return;
+      }
+      const tag = document.createElement("script");
+      tag.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js";
+      tag.onload = () => resolve(window.supabase ? window.supabase.createClient(cfg.supabaseUrl, cfg.supabasePublishableKey) : null);
+      tag.onerror = () => resolve(null);
+      document.head.appendChild(tag);
+    });
+    return supabaseClientPromise;
+  }
+
+  function timeAgo(iso) {
+    const s = Math.max(1, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
+    const units = [[31536000, "y"], [2592000, "mo"], [86400, "d"], [3600, "h"], [60, "m"]];
+    for (const [secs, label] of units) {
+      if (s >= secs) return Math.floor(s / secs) + label + " ago";
+    }
+    return "just now";
+  }
+
+  function reviewItemHTML(r) {
+    return `<li class="review-item">
+      <div class="review-item-head">
+        <span class="review-author">${escapeHtml(r.reviewer_name || "Anonymous")}</span>
+        <span class="review-stars">${starsHTML(r.rating, 13)}</span>
+        <span class="review-date">${timeAgo(r.created_at)}</span>
+      </div>
+      ${r.review_text ? `<p class="review-text">${escapeHtml(r.review_text)}</p>` : ""}
+    </li>`;
+  }
+
+  function officialScoreHTML(game) {
+    const os = game.officialScore;
+    if (!os || typeof os.value !== "number") {
+      return `<div class="score-block score-block-empty"><span class="score-label">Official score</span><span class="score-empty-note">Not added yet</span></div>`;
+    }
+    const url = os.url ? ` <a href="${escapeHtml(os.url)}" target="_blank" rel="noopener" class="score-source-link">via ${escapeHtml(os.source || "critics")} ↗</a>` : ` <span class="score-source">via ${escapeHtml(os.source || "critics")}</span>`;
+    return `<div class="score-block">
+      <span class="score-label">Official score</span>
+      <span class="score-big">${Math.round(os.value)}<span class="score-max">/100</span></span>
+      ${url}
+    </div>`;
+  }
+
+  // Renders the whole "Ratings & reviews" card into `container` for `game`,
+  // fetching existing reviews live and wiring the submit form.
+  function renderReviewsSection(container, game) {
+    if (!container) return;
+    container.innerHTML = `
+      <h2>Ratings &amp; reviews</h2>
+      <div class="reviews-summary">
+        <div class="score-block">
+          <span class="score-label">Player rating</span>
+          <span class="score-big" data-user-avg>–</span>
+          <span class="score-source" data-user-count>No ratings yet</span>
+        </div>
+        ${officialScoreHTML(game)}
+      </div>
+      <div class="review-form-wrap">
+        <p class="review-form-note">Rate it and leave a review — visible to everyone, no account needed.</p>
+        <form class="review-form" data-review-form>
+          <div class="review-form-row">
+            <div class="star-picker" data-star-picker></div>
+            <input type="text" name="reviewer_name" maxlength="40" placeholder="Your name (optional)" class="review-name-input">
+          </div>
+          <textarea name="review_text" maxlength="2000" rows="3" placeholder="What did you think? (optional)" class="review-text-input"></textarea>
+          <input type="text" name="website" class="review-honeypot" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <div class="review-form-actions">
+            <button type="submit" class="btn-primary">Post review</button>
+            <span class="review-form-status" data-review-status></span>
+          </div>
+        </form>
+      </div>
+      <ul class="review-list" data-review-list><li class="review-loading">Loading reviews…</li></ul>
+    `;
+
+    const picker = wireStarPicker(container.querySelector("[data-star-picker]"), 0);
+    const form = container.querySelector("[data-review-form]");
+    const status = container.querySelector("[data-review-status]");
+    const list = container.querySelector("[data-review-list]");
+    const avgEl = container.querySelector("[data-user-avg]");
+    const countEl = container.querySelector("[data-user-count]");
+
+    function paintReviews(reviews) {
+      if (reviews.length === 0) {
+        list.innerHTML = `<li class="review-empty">No reviews yet — be the first.</li>`;
+        avgEl.textContent = "–";
+        countEl.textContent = "No ratings yet";
+        return;
+      }
+      const avg = reviews.reduce((s, r) => s + Number(r.rating), 0) / reviews.length;
+      avgEl.innerHTML = avg.toFixed(1) + `<span class="score-max">/5</span>`;
+      countEl.textContent = reviews.length + (reviews.length === 1 ? " rating" : " ratings");
+      list.innerHTML = reviews.map(reviewItemHTML).join("");
+    }
+
+    loadSupabaseClient().then((client) => {
+      if (!client) {
+        list.innerHTML = `<li class="review-empty">Reviews are temporarily unavailable.</li>`;
+        form.querySelector("button[type=submit]").disabled = true;
+        return;
+      }
+      client.from("game_reviews").select("*").eq("game_slug", game.slug).order("created_at", { ascending: false })
+        .then(({ data, error }) => {
+          if (error) { list.innerHTML = `<li class="review-empty">Reviews are temporarily unavailable.</li>`; return; }
+          paintReviews(data || []);
+        });
+
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        if (form.website.value) return; // honeypot tripped — silently drop
+        const rating = picker.getValue();
+        if (!rating) { status.textContent = "Pick a star rating first."; return; }
+        const submitBtn = form.querySelector("button[type=submit]");
+        submitBtn.disabled = true;
+        status.textContent = "Posting…";
+        client.from("game_reviews").insert({
+          game_slug: game.slug,
+          reviewer_name: (form.reviewer_name.value || "").trim() || "Anonymous",
+          rating: rating,
+          review_text: (form.review_text.value || "").trim() || null,
+        }).select().then(({ data, error }) => {
+          submitBtn.disabled = false;
+          if (error) { status.textContent = "Couldn't post — try again."; return; }
+          status.textContent = "Posted — thanks!";
+          form.reset();
+          picker.getValue = () => 0;
+          container.querySelector("[data-star-picker]").innerHTML = starsHTML(0, 26).replace(/star-slot/g, "star-slot pickable");
+          wireStarPicker(container.querySelector("[data-star-picker]"), 0, null);
+          client.from("game_reviews").select("*").eq("game_slug", game.slug).order("created_at", { ascending: false })
+            .then(({ data }) => paintReviews(data || []));
+        });
+      });
+    });
+  }
+  GC.renderReviewsSection = renderReviewsSection;
 
   // ---------- floating dock nav: sliding indicator + search overlay ----------
   function debounce(fn, wait) {
