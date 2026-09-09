@@ -246,15 +246,18 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
         <div class="chips">{genre_chips}<span class="chip">{year}</span></div>
         <h1>{title}</h1>
         <p class="tagline">{tagline}</p>
+        <div class="hero-actions">
+          <div class="hero-ratings" id="hero-ratings" data-hero-ratings></div>
+          <button type="button" class="wishlist-btn" id="wishlist-btn" data-wishlist-slug="{slug}" aria-pressed="false">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.2-4.6-10-9.2C.4 8.6 2 5 5.6 5c2 0 3.4 1 4.9 2.9C11.9 6 13.3 5 15.3 5 19 5 20.6 8.6 19 11.8 16.8 16.4 12 21 12 21z"/></svg>
+            <span class="wishlist-label">Add to wishlist</span>
+          </button>
+        </div>
         <div class="game-meta-list">
           <div>Release date<strong>{release_full}</strong></div>
           <div>Developer<strong>{developer}</strong></div>
           <div>Publisher<strong>{publisher}</strong></div>
         </div>
-        <button type="button" class="wishlist-btn" id="wishlist-btn" data-wishlist-slug="{slug}" aria-pressed="false">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.2-4.6-10-9.2C.4 8.6 2 5 5.6 5c2 0 3.4 1 4.9 2.9C11.9 6 13.3 5 15.3 5 19 5 20.6 8.6 19 11.8 16.8 16.4 12 21 12 21z"/></svg>
-          <span class="wishlist-label">Add to wishlist</span>
-        </button>
       </div>
     </div>
   </div>
@@ -285,10 +288,10 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
         </div>
         {full_story_html}
         {creators_html}
-        <div class="reviews-card" id="reviews-card"></div>
       </div>
 
       <aside>
+        <div class="side-card reviews-card" id="reviews-card"></div>
         <div class="side-card" id="price-card">
           <p class="price-loading">Checking current prices…</p>
         </div>
@@ -361,7 +364,7 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
     slug: SLUG,
     title: "{title_js}",
     officialScore: {official_score_js},
-  }});
+  }}, document.getElementById("hero-ratings"));
 
   document.querySelectorAll(".lang-btn").forEach(function (btn) {{
     btn.addEventListener("click", function () {{
