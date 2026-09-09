@@ -11,13 +11,13 @@
     // Get one free at https://analytics.google.com — Admin > Data Streams
     // > Web > (your stream) > Measurement ID. Leave "" to skip analytics
     // entirely (no script loads, nothing is tracked).
-    gaMeasurementId: "",
+    gaMeasurementId: "G-WW3W229PGJ",
 
     // Buttondown username, e.g. "digigames" (from your profile URL:
     // buttondown.email/<username>). Sign up free at https://buttondown.email
     // Leave "" and the footer subscribe form shows an honest
     // "opening soon" note instead of submitting anywhere.
-    buttondownUsername: "",
+    buttondownUsername: "esmaeily",
   };
 
   // ---- GA4 bootstrap (only runs if a Measurement ID is set above) ----
