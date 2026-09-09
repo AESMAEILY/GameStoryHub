@@ -601,6 +601,159 @@
   }
   GC.buildCarousel = buildCarousel;
 
+  // ---------- price comparison (CheapShark, PC storefronts only) ----------
+  // CheapShark is a free, keyless public API covering PC digital stores
+  // (Steam, GOG, Humble, Fanatical, Epic, etc.) — it does NOT cover
+  // PlayStation/Xbox/Switch storefronts, so console-only titles fall back
+  // to a plain store-search link instead of live prices.
+  const CHEAPSHARK_BASE = "https://www.cheapshark.com/api/1.0";
+  let storeMapPromise = null;
+  function loadStoreMap() {
+    if (storeMapPromise) return storeMapPromise;
+    storeMapPromise = fetch(CHEAPSHARK_BASE + "/stores")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((stores) => {
+        const map = {};
+        (stores || []).forEach((s) => { map[s.storeID] = s.storeName; });
+        return map;
+      })
+      .catch(() => ({}));
+    return storeMapPromise;
+  }
+
+  function isPcPlatform(platforms) {
+    return (platforms || []).some((p) => {
+      const s = p.toLowerCase();
+      return s.indexOf("pc") !== -1 || s.indexOf("mac") !== -1;
+    });
+  }
+  GC.isPcPlatform = isPcPlatform;
+
+  function fallbackPriceHTML(title, note) {
+    return (
+      `<h3>Where to buy</h3>` +
+      `<p class="price-note">${note}</p>` +
+      `<a class="price-fallback-link" target="_blank" rel="noopener" href="https://store.steampowered.com/search/?term=${encodeURIComponent(title)}">Search Steam ↗</a>`
+    );
+  }
+
+  // Renders a "Where to buy" card into `container` for a game by title.
+  // PC/macOS titles get a live top-3 price comparison via CheapShark;
+  // everything else gets a console-appropriate store-search fallback.
+  function renderPriceCard(container, game) {
+    if (!container) return;
+    const title = game.title, platforms = game.platforms || [];
+    if (!isPcPlatform(platforms)) {
+      const p = platforms.map((x) => x.toLowerCase()).join(" ");
+      let url = "https://www.google.com/search?tbm=shop&q=" + encodeURIComponent(title);
+      let label = "Search for " + title + " ↗";
+      if (p.indexOf("playstation") !== -1 || p.indexOf("ps") !== -1) {
+        url = "https://store.playstation.com/search/" + encodeURIComponent(title);
+        label = "Check PlayStation Store ↗";
+      } else if (p.indexOf("xbox") !== -1) {
+        url = "https://www.xbox.com/en-us/games/store/search?q=" + encodeURIComponent(title);
+        label = "Check Xbox Store ↗";
+      } else if (p.indexOf("switch") !== -1) {
+        url = "https://www.nintendo.com/us/search/#q=" + encodeURIComponent(title) + "&p=1&sort=df";
+        label = "Check Nintendo eShop ↗";
+      }
+      container.innerHTML =
+        `<h3>Where to buy</h3>` +
+        `<p class="price-note">Live price comparison currently covers PC storefronts only.</p>` +
+        `<a class="price-fallback-link" target="_blank" rel="noopener" href="${url}">${escapeHtml(label)}</a>`;
+      return;
+    }
+
+    container.innerHTML = `<h3>Where to buy</h3><p class="price-loading">Checking current prices…</p>`;
+    const dealsUrl = CHEAPSHARK_BASE + "/deals?title=" + encodeURIComponent(title) + "&exact=false&limit=10&sortBy=Price";
+    Promise.all([
+      fetch(dealsUrl).then((r) => (r.ok ? r.json() : [])),
+      loadStoreMap(),
+    ]).then(([deals, storeMap]) => {
+      if (!Array.isArray(deals) || deals.length === 0) {
+        container.innerHTML = fallbackPriceHTML(title, "No live pricing found for this title right now.");
+        return;
+      }
+      const seen = {};
+      const rows = [];
+      deals.forEach((d) => {
+        const store = storeMap[d.storeID] || ("Store " + d.storeID);
+        if (seen[store]) return;
+        seen[store] = true;
+        rows.push({
+          store,
+          price: parseFloat(d.salePrice),
+          normal: parseFloat(d.normalPrice),
+          savings: parseFloat(d.savings),
+          dealID: d.dealID,
+        });
+      });
+      rows.sort((a, b) => a.price - b.price);
+      const top = rows.slice(0, 3);
+      if (top.length === 0) {
+        container.innerHTML = fallbackPriceHTML(title, "No live pricing found for this title right now.");
+        return;
+      }
+      container.innerHTML =
+        `<h3>Where to buy</h3>` +
+        `<ul class="price-list">` +
+        top.map((r) => {
+          const off = r.savings > 1 ? `<span class="price-off">-${Math.round(r.savings)}%</span>` : "";
+          const was = r.normal > r.price + 0.001 ? `<span class="price-was">$${r.normal.toFixed(2)}</span>` : "";
+          return (
+            `<li class="price-row">` +
+            `<span class="price-store">${escapeHtml(r.store)}</span>` +
+            `<span class="price-amounts">${was}<span class="price-now">$${r.price.toFixed(2)}</span>${off}</span>` +
+            `<a class="price-go" target="_blank" rel="noopener" href="https://www.cheapshark.com/redirect?dealID=${encodeURIComponent(r.dealID)}">Get deal ↗</a>` +
+            `</li>`
+          );
+        }).join("") +
+        `</ul>` +
+        `<p class="price-attribution">Prices via <a href="https://www.cheapshark.com" target="_blank" rel="noopener">CheapShark</a>, live · USD · PC storefronts.</p>`;
+    }).catch(() => {
+      container.innerHTML = fallbackPriceHTML(title, "Price checking is temporarily unavailable.");
+    });
+  }
+  GC.renderPriceCard = renderPriceCard;
+
+  // ---------- newsletter subscribe form (Buttondown embed, no API key) ----------
+  // Reads window.GC_CONFIG.buttondownUsername (set in js/config.js). Until
+  // that's filled in, the form shows an honest "opening soon" note instead
+  // of submitting to nowhere — matches the site's "real 0, not fake" stats
+  // philosophy: no subscriber pipeline exists until this is truly wired up.
+  function wireNewsletterForm(form) {
+    if (!form) return;
+    const note = document.getElementById(form.getAttribute("data-note-id") || "");
+    const username = (window.GC_CONFIG && window.GC_CONFIG.buttondownUsername) || "";
+    function showNote(text) {
+      if (!note) return;
+      note.hidden = false;
+      note.textContent = text;
+    }
+    if (!username) {
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        showNote("Signups are opening soon — check back shortly.");
+      });
+      return;
+    }
+    form.action = "https://buttondown.email/api/emails/embed-subscribe/" + username;
+    form.method = "post";
+    form.target = "popupwindow";
+    if (!form.querySelector('input[name="embed"]')) {
+      const embed = document.createElement("input");
+      embed.type = "hidden";
+      embed.name = "embed";
+      embed.value = "1";
+      form.appendChild(embed);
+    }
+    form.addEventListener("submit", () => {
+      window.open("https://buttondown.email/" + username, "popupwindow", "width=600,height=600");
+      showNote("Thanks — check your inbox to confirm.");
+    });
+  }
+  GC.wireNewsletterForm = wireNewsletterForm;
+
   // ---------- floating dock nav: sliding indicator + search overlay ----------
   function debounce(fn, wait) {
     let t = null;
