@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Your Wishlist — Digi-games</title>
-<meta name="description" content="Games you've saved to play later on Digi-games — saved privately in your own browser.">
+<meta name="description" content="Games you've saved to play later on Digi-games — synced to your account.">
 <link rel="canonical" href="https://aesmaeily.github.io/GameStoryHub/wishlist.html">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='26' fill='%237c8cff'/%3E%3Ctext x='50' y='65' font-size='42' font-weight='700' text-anchor='middle' font-family='Arial' fill='%2306060a'%3EDG%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -64,7 +64,7 @@
     <div class="section-head">
       <div>
         <h2>Your wishlist</h2>
-        <p id="wishlist-count">Saved privately in this browser — nobody else sees it.</p>
+        <p id="wishlist-count">Sign in to see the games you've saved.</p>
       </div>
     </div>
   </div>
@@ -117,22 +117,41 @@
       '</div>';
   }
 
+  function signInStateHTML() {
+    return '<div class="wishlist-empty">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7.2-4.6-10-9.2C.4 8.6 2 5 5.6 5c2 0 3.4 1 4.9 2.9C11.9 6 13.3 5 15.3 5 19 5 20.6 8.6 19 11.8 16.8 16.4 12 21 12 21z"/></svg>' +
+      '<p><strong>Sign in to see your wishlist.</strong><br>Your saved games follow your account across devices.</p>' +
+      '<button type="button" class="btn-primary" id="wishlist-signin-btn" style="display:inline-block;padding:10px 20px;">Sign in</button>' +
+      '</div>';
+  }
+
   function render() {
-    var saved = GameCodex.wishlist.get();
-    GameCodex.ready.then(function (games) {
-      var mine = games.filter(function (g) { return saved.indexOf(g.slug) !== -1; });
-      countEl.textContent = mine.length === 0
-        ? "Saved privately in this browser — nobody else sees it."
-        : mine.length + (mine.length === 1 ? " game saved" : " games saved") + " — private to this browser.";
-      if (mine.length === 0) {
-        grid.innerHTML = emptyStateHTML();
-        return;
-      }
-      GameCodex.renderGrid(grid, mine);
+    var session = GameCodex.auth.getSession();
+    if (!session) {
+      countEl.textContent = "Sign in to see the games you've saved.";
+      grid.innerHTML = signInStateHTML();
+      var btn = document.getElementById("wishlist-signin-btn");
+      if (btn) btn.addEventListener("click", function () { GameCodex.auth.openGate("Sign in to see your wishlist."); });
+      return;
+    }
+    GameCodex.wishlist.ready().then(function (saved) {
+      saved = saved || new Set();
+      GameCodex.ready.then(function (games) {
+        var mine = games.filter(function (g) { return saved.has(g.slug); });
+        countEl.textContent = mine.length === 0
+          ? "Nothing saved yet."
+          : mine.length + (mine.length === 1 ? " game saved" : " games saved") + " to your account.";
+        if (mine.length === 0) {
+          grid.innerHTML = emptyStateHTML();
+          return;
+        }
+        GameCodex.renderGrid(grid, mine);
+      });
     });
   }
 
   document.addEventListener("gc:wishlist-change", render);
+  GameCodex.auth.onChange(render);
   render();
 
   GameCodex.ready.then(function () {
