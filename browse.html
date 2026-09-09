@@ -85,6 +85,7 @@
         <select id="sort-select" aria-label="Sort games">
           <option value="date-desc">Newest first</option>
           <option value="date-asc">Oldest first</option>
+          <option value="rating-desc">Top rated</option>
           <option value="az">Title A–Z</option>
           <option value="za">Title Z–A</option>
         </select>
@@ -166,6 +167,13 @@
     filtered.sort(function (a, b) {
       if (state.sort === "az") return a.title.localeCompare(b.title);
       if (state.sort === "za") return b.title.localeCompare(a.title);
+      if (state.sort === "rating-desc") {
+        // Sorts by the official critic score — the one rating every game
+        // actually has, rather than the (often sparse) player average.
+        var av = (a.officialScore && typeof a.officialScore.value === "number") ? a.officialScore.value : -1;
+        var bv = (b.officialScore && typeof b.officialScore.value === "number") ? b.officialScore.value : -1;
+        return bv - av;
+      }
       return applySortDate(a, b, state.sort);
     });
 
