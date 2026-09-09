@@ -210,6 +210,10 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
       <svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg>
       <span class="dock-label">Browse</span>
     </a>
+    <a href="../wishlist.html" class="dock-link" data-route="wishlist">
+      <svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7.2-4.6-10-9.2C.4 8.6 2 5 5.6 5c2 0 3.4 1 4.9 2.9C11.9 6 13.3 5 15.3 5 19 5 20.6 8.6 19 11.8 16.8 16.4 12 21 12 21z"/></svg>
+      <span class="dock-label">Wishlist</span>
+    </a>
     <button type="button" class="dock-link dock-search-toggle" id="dock-search-toggle" aria-label="Search games" aria-haspopup="dialog">
       <svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
       <span class="dock-label">Search</span>
@@ -247,6 +251,10 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
           <div>Developer<strong>{developer}</strong></div>
           <div>Publisher<strong>{publisher}</strong></div>
         </div>
+        <button type="button" class="wishlist-btn" id="wishlist-btn" data-wishlist-slug="{slug}" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.2-4.6-10-9.2C.4 8.6 2 5 5.6 5c2 0 3.4 1 4.9 2.9C11.9 6 13.3 5 15.3 5 19 5 20.6 8.6 19 11.8 16.8 16.4 12 21 12 21z"/></svg>
+          <span class="wishlist-label">Add to wishlist</span>
+        </button>
       </div>
     </div>
   </div>
@@ -277,6 +285,7 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
         </div>
         {full_story_html}
         {creators_html}
+        <div class="reviews-card" id="reviews-card"></div>
       </div>
 
       <aside>
@@ -346,6 +355,12 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
   GameCodex.renderPriceCard(document.getElementById("price-card"), {{
     title: "{title_js}",
     platforms: {platforms_js},
+  }});
+  GameCodex.paintWishlistButtons(document);
+  GameCodex.renderReviewsSection(document.getElementById("reviews-card"), {{
+    slug: SLUG,
+    title: "{title_js}",
+    officialScore: {official_score_js},
   }});
 
   document.querySelectorAll(".lang-btn").forEach(function (btn) {{
@@ -439,6 +454,7 @@ def build_page(game):
         json_ld=game_json_ld(game, canonical_url, og_image),
         title_js=js_str(game["title"]),
         platforms_js=json.dumps(game["platforms"]),
+        official_score_js=json.dumps(game.get("officialScore")),
     )
 
 

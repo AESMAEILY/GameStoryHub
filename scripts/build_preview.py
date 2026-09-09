@@ -59,6 +59,10 @@ __CSS__
       <svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg>
       <span class="dock-label">Browse</span>
     </a>
+    <a href="javascript:void(0)" class="dock-link" data-route="wishlist" data-nav="/wishlist">
+      <svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7.2-4.6-10-9.2C.4 8.6 2 5 5.6 5c2 0 3.4 1 4.9 2.9C11.9 6 13.3 5 15.3 5 19 5 20.6 8.6 19 11.8 16.8 16.4 12 21 12 21z"/></svg>
+      <span class="dock-label">Wishlist</span>
+    </a>
     <button type="button" class="dock-link dock-search-toggle" id="dock-search-toggle" aria-label="Search games" aria-haspopup="dialog">
       <svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
       <span class="dock-label">Search</span>
@@ -204,6 +208,108 @@ __GAMES_JSON__
     });
   }
 
+  // ---------- wishlist (preview-only, in-memory — no localStorage) ----------
+  // The real site (js/site.js) requires signing in (Supabase Auth) and syncs
+  // the wishlist to the account server-side. Accounts and network auth don't
+  // make sense in this static preview, and files rendered inline in the
+  // conversation must not touch browser storage either, so this preview
+  // keeps the same visible toggle behavior with a plain in-memory Set
+  // instead — it resets if the preview is reloaded, which is fine here.
+  var wishlistSet = new Set();
+  function isWishlisted(slug) { return wishlistSet.has(slug); }
+  function toggleWishlist(slug) {
+    var on;
+    if (wishlistSet.has(slug)) { wishlistSet["delete"](slug); on = false; }
+    else { wishlistSet.add(slug); on = true; }
+    document.dispatchEvent(new CustomEvent("gc:wishlist-change", { detail: { slug: slug, on: on } }));
+    return on;
+  }
+  var HEART_ICON = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.2-4.6-10-9.2C.4 8.6 2 5 5.6 5c2 0 3.4 1 4.9 2.9C11.9 6 13.3 5 15.3 5 19 5 20.6 8.6 19 11.8 16.8 16.4 12 21 12 21z"/></svg>';
+
+  // Renders/attaches a heart toggle to `host` for `slug` (game-hero button).
+  function wireWishlistButton(host, slug) {
+    if (!host) return;
+    function paint() {
+      var on = isWishlisted(slug);
+      host.classList.toggle("is-active", on);
+      host.setAttribute("aria-pressed", on ? "true" : "false");
+      var label = host.querySelector(".wishlist-label");
+      if (label) label.textContent = on ? "In your wishlist" : "Add to wishlist";
+    }
+    host.addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleWishlist(slug);
+      paint();
+    });
+    paint();
+  }
+
+  // Paints every [data-wishlist-slug] button inside `scope` (tile cards).
+  function paintWishlistButtons(scope) {
+    (scope || document).querySelectorAll("[data-wishlist-slug]").forEach(function (btn) {
+      var slug = btn.dataset.wishlistSlug;
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var on = toggleWishlist(slug);
+        btn.classList.toggle("is-active", on);
+        btn.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+      btn.classList.toggle("is-active", isWishlisted(slug));
+      btn.setAttribute("aria-pressed", isWishlisted(slug) ? "true" : "false");
+    });
+  }
+
+  // ---------- star rating (5 stars, half-star precision) ----------
+  // Read-only display only in this preview — mirrors GC.starsHTML in
+  // js/site.js. No picker is needed here since the review form itself isn't
+  // simulated (see renderReviewsSectionPreview below).
+  function starsHTML(value, size) {
+    size = size || 16;
+    var v = Math.max(0, Math.min(5, value || 0));
+    var out = "";
+    for (var i = 1; i <= 5; i++) {
+      var fill = Math.max(0, Math.min(1, v - (i - 1)));
+      out += '<span class="star-slot" style="width:' + size + 'px;height:' + size + 'px">' +
+        '<svg class="star-outline" viewBox="0 0 24 24" width="' + size + '" height="' + size + '"><path d="M12 2.5l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.8-6.2 3.8 1.6-7-5.4-4.8 7.1-.7z"/></svg>' +
+        '<svg class="star-fill" viewBox="0 0 24 24" width="' + size + '" height="' + size + '" style="clip-path:inset(0 ' + ((1 - fill) * 100) + '% 0 0)"><path d="M12 2.5l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.8-6.2 3.8 1.6-7-5.4-4.8 7.1-.7z"/></svg>' +
+        '</span>';
+    }
+    return out;
+  }
+
+  // ---------- ratings & reviews (preview-only, static) ----------
+  // Ratings/reviews are shared publicly via Supabase on the real deployed
+  // site (js/site.js's renderReviewsSection). This preview sandbox may not
+  // allow arbitrary outbound fetch() calls, so — same reasoning as
+  // renderPriceCardPreview above — this shows the same card shape with a
+  // note instead of a live fetch/submit form.
+  function officialScoreHTML(game) {
+    var os = game.officialScore;
+    if (!os || typeof os.value !== "number") {
+      return '<div class="score-block score-block-empty"><span class="score-label">Official score</span><span class="score-empty-note">Not added yet</span></div>';
+    }
+    var url = os.url
+      ? ' <a href="' + escapeHtml(os.url) + '" target="_blank" rel="noopener" class="score-source-link">via ' + escapeHtml(os.source || "critics") + ' &#8599;</a>'
+      : ' <span class="score-source">via ' + escapeHtml(os.source || "critics") + '</span>';
+    return '<div class="score-block">' +
+      '<span class="score-label">Official score</span>' +
+      '<span class="score-big">' + Math.round(os.value) + '<span class="score-max">/100</span></span>' +
+      url +
+      '</div>';
+  }
+  function renderReviewsSectionPreview(container, game) {
+    if (!container) return;
+    container.innerHTML =
+      '<h2>Ratings &amp; reviews</h2>' +
+      '<div class="reviews-summary">' +
+        '<div class="score-block score-block-empty"><span class="score-label">Player rating</span><span class="score-empty-note">No ratings yet</span></div>' +
+        officialScoreHTML(game) +
+      '</div>' +
+      '<p class="price-note">Star ratings and written reviews (via Supabase) run on the deployed site &mdash; not simulated in this local preview.</p>';
+  }
+
   var GENRE_ICONS = {
     "Metroidvania": '<circle cx="16" cy="20" r="5"/><circle cx="48" cy="16" r="5"/><circle cx="32" cy="48" r="5"/><path d="M20 23 L44 18 M18 24 L30 45 M46 20 L34 45"/>',
     "Roguelike": '<rect x="14" y="14" width="36" height="36" rx="7"/><circle cx="24" cy="24" r="2.6" fill="currentColor" stroke="none"/><circle cx="40" cy="24" r="2.6" fill="currentColor" stroke="none"/><circle cx="32" cy="32" r="2.6" fill="currentColor" stroke="none"/><circle cx="24" cy="40" r="2.6" fill="currentColor" stroke="none"/><circle cx="40" cy="40" r="2.6" fill="currentColor" stroke="none"/>',
@@ -247,6 +353,7 @@ __GAMES_JSON__
         '<iframe class="tile-preview" tabindex="-1" title="" data-id="' + yt.id + '"></iframe>' +
         '<span class="play-badge" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>' +
       '</a>' +
+      '<button type="button" class="tile-wishlist" data-wishlist-slug="' + game.slug + '" aria-label="Add ' + escapeHtml(game.title) + ' to wishlist" aria-pressed="false">' + HEART_ICON + '</button>' +
       '<div class="tile-body">' +
         '<a href="javascript:void(0)" data-nav="' + gameHref(game.slug) + '"><h3 class="tile-title">' + escapeHtml(game.title) + '</h3></a>' +
         '<div class="tile-meta"><span>' + year(game.releaseDate) + '</span><span class="dot">&middot;</span><span>' + escapeHtml(game.platforms[0]) + (game.platforms.length > 1 ? " +" + (game.platforms.length - 1) : "") + '</span></div>' +
@@ -301,6 +408,7 @@ __GAMES_JSON__
     wireHoverPreviews(container);
     wireTilt(container);
     wireReveal(container);
+    paintWishlistButtons(container);
   }
 
   // Home hero: coverflow-style featured carousel. One absolutely-positioned
@@ -854,6 +962,7 @@ __GAMES_JSON__
                 '<div>Developer<strong>' + escapeHtml(game.developer) + '</strong></div>' +
                 '<div>Publisher<strong>' + escapeHtml(game.publisher) + '</strong></div>' +
               '</div>' +
+              '<button type="button" class="wishlist-btn" id="wishlist-btn" aria-pressed="false">' + HEART_ICON + '<span class="wishlist-label">Add to wishlist</span></button>' +
             '</div>' +
           '</div>' +
         '</div>' +
@@ -870,6 +979,7 @@ __GAMES_JSON__
             '</div>' +
             fullStoryHTML(game) +
             creatorsHTML(game) +
+            '<div class="reviews-card" id="reviews-card"></div>' +
           '</div>' +
           '<aside>' +
             '<div class="side-card" id="price-card"></div>' +
@@ -905,7 +1015,33 @@ __GAMES_JSON__
     wireTilt(document.querySelector(".game-hero-grid"));
     mountYouTubePlayer("yt-player-main", game.youtube.id);
     renderPriceCardPreview(document.getElementById("price-card"), game);
+    wireWishlistButton(document.getElementById("wishlist-btn"), slug);
+    renderReviewsSectionPreview(document.getElementById("reviews-card"), game);
     window.scrollTo(0, 0);
+  }
+
+  function viewWishlist() {
+    var mine = GAMES.filter(function (g) { return wishlistSet.has(g.slug); });
+    app.innerHTML =
+      '<section class="section" style="padding-bottom:0;"><div class="container">' +
+        '<div class="section-head"><div><h2>Your wishlist</h2><p id="wishlist-count">' +
+          (mine.length === 0
+            ? "Nothing saved yet in this preview session &mdash; on the deployed site, wishlist requires signing in and syncs to your account."
+            : mine.length + (mine.length === 1 ? " game saved" : " games saved") + " in this preview session.") +
+        '</p></div></div>' +
+      '</div></section>' +
+      '<section class="section" style="padding-top:16px;"><div class="container"><div class="grid" id="wishlist-grid"></div></div></section>';
+
+    var grid = document.getElementById("wishlist-grid");
+    if (mine.length === 0) {
+      grid.innerHTML = '<div class="wishlist-empty">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7.2-4.6-10-9.2C.4 8.6 2 5 5.6 5c2 0 3.4 1 4.9 2.9C11.9 6 13.3 5 15.3 5 19 5 20.6 8.6 19 11.8 16.8 16.4 12 21 12 21z"/></svg>' +
+        '<p><strong>Nothing saved yet.</strong><br>Tap the heart on any game to add it here.</p>' +
+        '<a class="btn-primary" href="javascript:void(0)" data-nav="/browse" style="display:inline-block;padding:10px 20px;">Browse games</a>' +
+        '</div>';
+    } else {
+      renderGrid(grid, mine);
+    }
   }
 
   // ---------- router ----------
@@ -928,6 +1064,11 @@ __GAMES_JSON__
       document.documentElement.style.setProperty("--accent", "#7c8cff");
       document.documentElement.style.setProperty("--accent2", "#3ee6c4");
       viewBrowse(qs);
+    } else if (path === "/wishlist") {
+      document.querySelector('[data-route="wishlist"]').classList.add("active");
+      document.documentElement.style.setProperty("--accent", "#7c8cff");
+      document.documentElement.style.setProperty("--accent2", "#3ee6c4");
+      viewWishlist();
     } else if (path.indexOf("/game/") === 0) {
       var slug = path.slice("/game/".length);
       var g = GAMES.find(function (x) { return x.slug === slug; });
@@ -971,6 +1112,11 @@ __GAMES_JSON__
       if (current === path) { route(); } else { window.location.hash = path; }
     }
   }, true);
+
+  document.addEventListener("gc:wishlist-change", function () {
+    var hash = window.location.hash.replace(/^#/, "") || "/";
+    if (hash.indexOf("/wishlist") === 0) viewWishlist();
+  });
 
   var dockNav = initDockNav();
   window.addEventListener("hashchange", route);
