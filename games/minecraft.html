@@ -72,11 +72,9 @@
   <div class="container">
     <p class="breadcrumb"><a href="../index.html">Home</a> / <a href="../browse.html">Browse</a> / Minecraft</p>
     <div class="game-hero-grid">
-      <div class="game-cover" style="--tile-accent:#c8ff4d;--tile-accent2:#6f9e13">
-        <div class="tile-art-bg"></div>
-        <span class="poster-icon"><svg viewBox="0 0 64 64"><path d="M32 6 L54 18 V42 L32 54 L10 42 V18 Z M32 6 V30 M10 18 L32 30 L54 18 M32 30 V54"/></svg></span>
+      <div class="game-cover has-photo" style="--tile-accent:#c8ff4d;--tile-accent2:#6f9e13">
+        <img class="tile-photo" src="../assets/posters/minecraft.jpg" alt="Minecraft cover art" loading="lazy" decoding="async">
         <div class="tile-vignette"></div>
-        <span class="poster-badge"><span class="tile-initial">MI</span></span>
       </div>
       <div class="game-title-block">
         <div class="chips"><span class="chip">Sandbox Survival</span><span class="chip">2011</span></div>
@@ -88,7 +86,7 @@
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.2-4.6-10-9.2C.4 8.6 2 5 5.6 5c2 0 3.4 1 4.9 2.9C11.9 6 13.3 5 15.3 5 19 5 20.6 8.6 19 11.8 16.8 16.4 12 21 12 21z"/></svg>
             <span class="wishlist-label">Add to wishlist</span>
           </button>
-          <div class="share-row" id="share-row"></div>
+          <div class="gc-share-row" id="gc-share-row"></div>
         </div>
         <div class="game-meta-list">
           <div>Release date<strong>November 18, 2011</strong></div>
@@ -207,7 +205,7 @@
     title: "Minecraft",
     platforms: ["PC", "Mobile", "Console", "Switch"],
   });
-  GameCodex.renderShareButtons(document.getElementById("share-row"), "Minecraft", "https://aesmaeily.github.io/GameStoryHub/games/minecraft.html");
+  GameCodex.renderShareButtons(document.getElementById("gc-share-row"), "Minecraft", "https://aesmaeily.github.io/GameStoryHub/games/minecraft.html");
   GameCodex.paintWishlistButtons(document);
   GameCodex.renderReviewsSection(document.getElementById("reviews-card"), {
     slug: SLUG,

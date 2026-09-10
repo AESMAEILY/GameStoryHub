@@ -72,11 +72,9 @@
   <div class="container">
     <p class="breadcrumb"><a href="../index.html">Home</a> / <a href="../browse.html">Browse</a> / The Witcher 3: Wild Hunt</p>
     <div class="game-hero-grid">
-      <div class="game-cover" style="--tile-accent:#7c8cff;--tile-accent2:#3a3f9e">
-        <div class="tile-art-bg"></div>
-        <span class="poster-icon"><svg viewBox="0 0 64 64"><path d="M32 8 L52 16 V30 C52 45 43 54 32 58 C21 54 12 45 12 30 V16 Z M32 20 V44 M22 32 H42"/></svg></span>
+      <div class="game-cover has-photo" style="--tile-accent:#7c8cff;--tile-accent2:#3a3f9e">
+        <img class="tile-photo" src="../assets/posters/witcher-3.jpg" alt="The Witcher 3: Wild Hunt cover art" loading="lazy" decoding="async">
         <div class="tile-vignette"></div>
-        <span class="poster-badge"><span class="tile-initial">TW</span></span>
       </div>
       <div class="game-title-block">
         <div class="chips"><span class="chip">RPG</span><span class="chip">2015</span></div>
@@ -88,7 +86,7 @@
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.2-4.6-10-9.2C.4 8.6 2 5 5.6 5c2 0 3.4 1 4.9 2.9C11.9 6 13.3 5 15.3 5 19 5 20.6 8.6 19 11.8 16.8 16.4 12 21 12 21z"/></svg>
             <span class="wishlist-label">Add to wishlist</span>
           </button>
-          <div class="share-row" id="share-row"></div>
+          <div class="gc-share-row" id="gc-share-row"></div>
         </div>
         <div class="game-meta-list">
           <div>Release date<strong>May 19, 2015</strong></div>
@@ -207,7 +205,7 @@
     title: "The Witcher 3: Wild Hunt",
     platforms: ["PC", "PS4", "Xbox", "Switch"],
   });
-  GameCodex.renderShareButtons(document.getElementById("share-row"), "The Witcher 3: Wild Hunt", "https://aesmaeily.github.io/GameStoryHub/games/witcher-3.html");
+  GameCodex.renderShareButtons(document.getElementById("gc-share-row"), "The Witcher 3: Wild Hunt", "https://aesmaeily.github.io/GameStoryHub/games/witcher-3.html");
   GameCodex.paintWishlistButtons(document);
   GameCodex.renderReviewsSection(document.getElementById("reviews-card"), {
     slug: SLUG,
