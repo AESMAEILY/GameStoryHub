@@ -1652,6 +1652,36 @@ a.rating-pill:hover { border-color: color-mix(in srgb, var(--accent2) 45%, var(-
 .price-fallback-link { display: inline-block; font-size: 0.82rem; font-weight: 600; color: var(--accent); }
 .price-fallback-link:hover { text-decoration: underline; }
 
+/* "Also search for it at" — affiliate store search links, sits right
+   below the price card (P1 #6). Deliberately lighter than a full
+   .side-card so it doesn't compete with the live CheapShark prices above. */
+.affiliate-row { padding: 4px 4px 20px; }
+.affiliate-row:empty { display: none; }
+.affiliate-row-label { font-size: 0.7rem; color: var(--text-faint); margin: 0 0 8px; text-transform: uppercase; letter-spacing: 0.03em; }
+.affiliate-links { display: flex; flex-wrap: wrap; gap: 8px; }
+.affiliate-link {
+  font-size: 0.76rem; font-weight: 600; color: var(--text-dim);
+  border: 1px solid var(--line); background: var(--bg-elev-2);
+  padding: 6px 11px; border-radius: 999px; white-space: nowrap;
+  transition: border-color .18s ease, color .18s ease;
+}
+.affiliate-link:hover { color: var(--text); border-color: color-mix(in srgb, var(--accent2) 45%, var(--line)); }
+
+/* social share buttons — game-page hero, next to the wishlist button (P1 #8) */
+.share-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.share-label { font-size: 0.72rem; color: var(--text-faint); margin-right: 2px; }
+.share-btn {
+  font-size: 0.74rem; font-weight: 600; color: var(--text-dim);
+  border: 1px solid var(--line); background: var(--bg-elev-2);
+  padding: 7px 12px; border-radius: 999px; white-space: nowrap;
+  cursor: pointer; transition: border-color .18s ease, color .18s ease, background .18s ease;
+}
+.share-btn:hover { color: var(--text); border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.share-btn.is-copied { color: #06060a; background: var(--accent2); border-color: var(--accent2); }
+@media (max-width: 480px) {
+  .share-row { width: 100%; }
+}
+
 /* related games */
 .related-strip { margin-top: 60px; }
 
@@ -1845,6 +1875,73 @@ a.rating-pill:hover { border-color: color-mix(in srgb, var(--accent2) 45%, var(-
 .review-date { font-size: 0.72rem; color: var(--text-faint); margin-left: auto; }
 .review-text { margin: 0; font-size: 0.85rem; color: var(--text-dim); line-height: 1.55; }
 .review-empty, .review-loading { color: var(--text-faint); font-size: 0.85rem; }
+
+/* =================== BEST DEALS (home banner + deals.html) =================== */
+.deals-loading { color: var(--text-faint); font-size: 0.9rem; padding: 20px 4px; }
+
+/* Home-page promo strip: a horizontal row of the best current discounts.
+   Reuses .section/.section-head/.see-all/.container from the rest of the
+   page for the header, so only the card row itself is custom here. */
+.deals-strip {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(220px, 1fr);
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  scroll-snap-type: x proximity;
+}
+.deals-strip .deal-card { scroll-snap-align: start; }
+
+/* Full deals.html page: a wrapping grid instead of a horizontal scroller. */
+.deals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 18px;
+}
+
+.deal-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: border-color .18s ease, transform .18s ease;
+}
+.deal-card:hover { border-color: color-mix(in srgb, var(--accent2) 40%, var(--line)); transform: translateY(-2px); }
+.deal-art { position: relative; display: block; aspect-ratio: 3/2; overflow: hidden; background: #08080c; }
+.deal-art-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.deal-art-mono {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-weight: 700; font-size: 1.6rem; color: #06060a;
+  background:
+    radial-gradient(60% 50% at 25% 20%, color-mix(in srgb, var(--tile-accent) 70%, transparent), transparent 62%),
+    linear-gradient(155deg, var(--tile-accent) 0%, var(--tile-accent2) 100%);
+}
+.deal-off {
+  position: absolute; top: 8px; right: 8px;
+  font-size: 0.72rem; font-weight: 700; color: #06060a;
+  background: var(--accent2); padding: 3px 8px; border-radius: 999px;
+}
+.deal-body { display: flex; flex-direction: column; gap: 4px; padding: 14px; }
+.deal-title { font-size: 0.9rem; font-weight: 700; color: var(--text); }
+.deal-title:hover { text-decoration: underline; }
+.deal-store { font-size: 0.72rem; color: var(--text-faint); }
+.deal-price { display: flex; align-items: baseline; gap: 7px; margin: 4px 0 8px; font-variant-numeric: tabular-nums; }
+.deal-was { font-size: 0.76rem; color: var(--text-faint); text-decoration: line-through; }
+.deal-now { font-size: 1.05rem; font-weight: 700; color: var(--accent2); }
+.deal-go {
+  align-self: flex-start;
+  font-size: 0.76rem; font-weight: 600; color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line));
+  padding: 6px 12px; border-radius: 999px; white-space: nowrap;
+}
+.deal-go:hover { background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--text); }
+
+.deals-page-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 22px; }
+.deals-updated-note { font-size: 0.78rem; color: var(--text-faint); }
 
 /* =================== UTIL =================== */
 .skip-link {
