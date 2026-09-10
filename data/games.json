@@ -476,7 +476,8 @@
       "value": 91,
       "source": "Metacritic",
       "url": "https://www.metacritic.com/game/marvels-spider-man-2/"
-    }
+    },
+    "poster": "assets/posters/spider-man-2.jpg"
   },
   {
     "slug": "counter-strike-2",
