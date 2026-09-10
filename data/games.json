@@ -345,7 +345,8 @@
       "value": 94,
       "source": "Metacritic",
       "url": "https://www.metacritic.com/game/metaphor-refantazio/"
-    }
+    },
+    "poster": "assets/posters/metaphor-refantazio.jpg"
   },
   {
     "slug": "astro-bot",
@@ -443,7 +444,8 @@
       "value": 92,
       "source": "Metacritic",
       "url": "https://www.metacritic.com/game/final-fantasy-vii-rebirth/"
-    }
+    },
+    "poster": "assets/posters/final-fantasy-7-rebirth.jpg"
   },
   {
     "slug": "spider-man-2",
@@ -826,7 +828,8 @@
       "value": 96,
       "source": "Metacritic",
       "url": "https://www.metacritic.com/game/elden-ring/"
-    }
+    },
+    "poster": "assets/posters/elden-ring.jpg"
   },
   {
     "slug": "horizon-forbidden-west",
@@ -859,7 +862,8 @@
       "value": 88,
       "source": "Metacritic",
       "url": "https://www.metacritic.com/game/horizon-forbidden-west/"
-    }
+    },
+    "poster": "assets/posters/horizon-forbidden-west.jpg"
   },
   {
     "slug": "it-takes-two",
@@ -961,7 +965,8 @@
       "value": 86,
       "source": "Metacritic",
       "url": "https://www.metacritic.com/game/assassins-creed-valhalla/"
-    }
+    },
+    "poster": "assets/posters/assassins-creed-valhalla.jpg"
   },
   {
     "slug": "hades",
@@ -996,7 +1001,8 @@
       "value": 93,
       "source": "Metacritic",
       "url": "https://www.metacritic.com/game/hades/"
-    }
+    },
+    "poster": "assets/posters/hades.jpg"
   },
   {
     "slug": "ghost-of-tsushima",
@@ -1029,7 +1035,8 @@
       "value": 83,
       "source": "Metacritic",
       "url": "https://www.metacritic.com/game/ghost-of-tsushima/"
-    }
+    },
+    "poster": "assets/posters/ghost-of-tsushima.jpg"
   },
   {
     "slug": "the-last-of-us-part-2",
@@ -1061,7 +1068,8 @@
       "value": 93,
       "source": "Metacritic",
       "url": "https://www.metacritic.com/game/the-last-of-us-part-ii/"
-    }
+    },
+    "poster": "assets/posters/the-last-of-us-part-2.jpg"
   },
   {
     "slug": "final-fantasy-7-remake",
@@ -1094,7 +1102,8 @@
       "value": 87,
       "source": "Metacritic",
       "url": "https://www.metacritic.com/game/final-fantasy-vii-remake/"
-    }
+    },
+    "poster": "assets/posters/final-fantasy-7-remake.jpg"
   },
   {
     "slug": "persona-5-royal",
@@ -1128,7 +1137,8 @@
       "value": 95,
       "source": "Metacritic",
       "url": "https://www.metacritic.com/game/persona-5-royal/"
-    }
+    },
+    "poster": "assets/posters/persona-5-royal.jpg"
   },
   {
     "slug": "half-life-alyx",
@@ -1159,7 +1169,8 @@
       "value": 93,
       "source": "Metacritic",
       "url": "https://www.metacritic.com/game/half-life-alyx/"
-    }
+    },
+    "poster": "assets/posters/half-life-alyx.jpg"
   },
   {
     "slug": "animal-crossing-new-horizons",
@@ -1190,7 +1201,8 @@
       "value": 91,
       "source": "Metacritic",
       "url": "https://www.metacritic.com/game/animal-crossing-new-horizons/"
-    }
+    },
+    "poster": "assets/posters/animal-crossing-new-horizons.jpg"
   },
   {
     "slug": "sekiro",
@@ -1223,7 +1235,8 @@
       "value": 90,
       "source": "Metacritic",
       "url": "https://www.metacritic.com/game/sekiro-shadows-die-twice/"
-    }
+    },
+    "poster": "assets/posters/sekiro.jpg"
   },
   {
     "slug": "red-dead-redemption-2",
@@ -1256,7 +1269,8 @@
       "value": 93,
       "source": "Metacritic",
       "url": "https://www.metacritic.com/game/red-dead-redemption-2/"
-    }
+    },
+    "poster": "assets/posters/red-dead-redemption-2.jpg"
   },
   {
     "slug": "spider-man",
@@ -1288,7 +1302,8 @@
       "value": 87,
       "source": "Metacritic",
       "url": "https://www.metacritic.com/game/marvels-spider-man/"
-    }
+    },
+    "poster": "assets/posters/spider-man.jpg"
   },
   {
     "slug": "god-of-war",
