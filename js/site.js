@@ -534,6 +534,22 @@
       return el;
     });
 
+    // Optional dynamic hero backdrop (see .hero-carousel-bg in styles.css):
+    // one huge-blurred layer per game -- an accent-color wash always, plus
+    // the game's own cover art on top when it has one -- crossfaded via
+    // opacity as the active card changes. Only built when the caller wires
+    // up a bgHost (currently just the home hero's upcoming-games carousel),
+    // so this stays a no-op for every other buildCarousel() usage.
+    const bgLayers = els.bgHost ? games.map((g) => {
+      const layer = document.createElement("div");
+      layer.className = "carousel-bg-layer";
+      const wash = `radial-gradient(60% 55% at 30% 25%, color-mix(in srgb, ${g.accent} 42%, transparent), transparent 68%),` +
+        `radial-gradient(55% 55% at 80% 80%, color-mix(in srgb, ${g.accent2 || g.accent} 30%, transparent), transparent 70%)`;
+      layer.style.backgroundImage = g.poster ? `${wash}, url("${ROOT}${g.poster}")` : wash;
+      els.bgHost.appendChild(layer);
+      return layer;
+    }) : null;
+
     function shortestOffset(i, cur) {
       let d = i - cur;
       if (d > N / 2) d -= N;
@@ -563,6 +579,9 @@
 
     function render(animateTitle) {
       cards.forEach(positionCard);
+      if (bgLayers) {
+        bgLayers.forEach((layer, i) => layer.classList.toggle("is-active", i === current));
+      }
       if (titleEl) {
         if (animateTitle && !reduceMotion) {
           clearTimeout(titleSwapTimer);
