@@ -1668,18 +1668,18 @@ a.rating-pill:hover { border-color: color-mix(in srgb, var(--accent2) 45%, var(-
 .affiliate-link:hover { color: var(--text); border-color: color-mix(in srgb, var(--accent2) 45%, var(--line)); }
 
 /* social share buttons — game-page hero, next to the wishlist button (P1 #8) */
-.share-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-.share-label { font-size: 0.72rem; color: var(--text-faint); margin-right: 2px; }
-.share-btn {
+.gc-share-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.gc-share-label { font-size: 0.72rem; color: var(--text-faint); margin-right: 2px; }
+.gc-share-btn {
   font-size: 0.74rem; font-weight: 600; color: var(--text-dim);
   border: 1px solid var(--line); background: var(--bg-elev-2);
   padding: 7px 12px; border-radius: 999px; white-space: nowrap;
   cursor: pointer; transition: border-color .18s ease, color .18s ease, background .18s ease;
 }
-.share-btn:hover { color: var(--text); border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
-.share-btn.is-copied { color: #06060a; background: var(--accent2); border-color: var(--accent2); }
+.gc-share-btn:hover { color: var(--text); border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.gc-share-btn.is-copied { color: #06060a; background: var(--accent2); border-color: var(--accent2); }
 @media (max-width: 480px) {
-  .share-row { width: 100%; }
+  .gc-share-row { width: 100%; }
 }
 
 /* related games */
