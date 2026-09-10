@@ -1335,7 +1335,8 @@
       "value": 94,
       "source": "Metacritic",
       "url": "https://www.metacritic.com/game/god-of-war/"
-    }
+    },
+    "poster": "assets/posters/god-of-war.jpg"
   },
   {
     "slug": "zelda-breath-of-the-wild",
@@ -1367,7 +1368,8 @@
       "value": 97,
       "source": "Metacritic",
       "url": "https://www.metacritic.com/game/the-legend-of-zelda-breath-of-the-wild/"
-    }
+    },
+    "poster": "assets/posters/zelda-breath-of-the-wild.jpg"
   },
   {
     "slug": "horizon-zero-dawn",
@@ -1399,7 +1401,8 @@
       "value": 89,
       "source": "Metacritic",
       "url": "https://www.metacritic.com/game/horizon-zero-dawn/"
-    }
+    },
+    "poster": "assets/posters/horizon-zero-dawn.jpg"
   },
   {
     "slug": "hollow-knight",
@@ -1433,7 +1436,8 @@
       "value": 90,
       "source": "Metacritic",
       "url": "https://www.metacritic.com/game/hollow-knight/"
-    }
+    },
+    "poster": "assets/posters/hollow-knight.jpg"
   },
   {
     "slug": "dark-souls-3",
@@ -1466,7 +1470,8 @@
       "value": 89,
       "source": "Metacritic",
       "url": "https://www.metacritic.com/game/dark-souls-iii/"
-    }
+    },
+    "poster": "assets/posters/dark-souls-3.jpg"
   },
   {
     "slug": "stardew-valley",
@@ -1501,7 +1506,8 @@
       "value": 89,
       "source": "Metacritic",
       "url": "https://www.metacritic.com/game/stardew-valley/"
-    }
+    },
+    "poster": "assets/posters/stardew-valley.jpg"
   },
   {
     "slug": "fallout-4",
@@ -1534,7 +1540,8 @@
       "value": 84,
       "source": "Metacritic",
       "url": "https://www.metacritic.com/game/fallout-4/"
-    }
+    },
+    "poster": "assets/posters/fallout-4.jpg"
   },
   {
     "slug": "witcher-3",
@@ -1568,7 +1575,8 @@
       "value": 93,
       "source": "Metacritic",
       "url": "https://www.metacritic.com/game/the-witcher-3-wild-hunt/"
-    }
+    },
+    "poster": "assets/posters/witcher-3.jpg"
   },
   {
     "slug": "bloodborne",
@@ -1633,7 +1641,8 @@
       "value": 96,
       "source": "Metacritic",
       "url": "https://www.metacritic.com/game/grand-theft-auto-v/"
-    }
+    },
+    "poster": "assets/posters/gta-5.jpg"
   },
   {
     "slug": "the-last-of-us",
@@ -1701,7 +1710,8 @@
       "value": 93,
       "source": "Metacritic",
       "url": "https://www.metacritic.com/game/minecraft/"
-    }
+    },
+    "poster": "assets/posters/minecraft.jpg"
   },
   {
     "slug": "skyrim",
@@ -1737,7 +1747,8 @@
       "value": 94,
       "source": "Metacritic",
       "url": "https://www.metacritic.com/game/the-elder-scrolls-v-skyrim/"
-    }
+    },
+    "poster": "assets/posters/skyrim.jpg"
   },
   {
     "slug": "terraria",
@@ -1771,7 +1782,8 @@
       "value": 83,
       "source": "Metacritic",
       "url": "https://www.metacritic.com/game/terraria/"
-    }
+    },
+    "poster": "assets/posters/terraria.jpg"
   },
   {
     "slug": "portal-2",
@@ -1837,7 +1849,8 @@
       "value": 94,
       "source": "Metacritic",
       "url": "https://www.metacritic.com/game/mass-effect-2/"
-    }
+    },
+    "poster": "assets/posters/mass-effect-2.jpg"
   },
   {
     "slug": "world-of-warcraft",
@@ -1868,6 +1881,7 @@
       "value": 93,
       "source": "Metacritic",
       "url": "https://www.metacritic.com/game/world-of-warcraft/"
-    }
+    },
+    "poster": "assets/posters/world-of-warcraft.jpg"
   }
 ]
