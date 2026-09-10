@@ -72,11 +72,9 @@
   <div class="container">
     <p class="breadcrumb"><a href="../index.html">Home</a> / <a href="../browse.html">Browse</a> / Final Fantasy VII Remake</p>
     <div class="game-hero-grid">
-      <div class="game-cover" style="--tile-accent:#a970ff;--tile-accent2:#5b2a9e">
-        <div class="tile-art-bg"></div>
-        <span class="poster-icon"><svg viewBox="0 0 64 64"><path d="M32 6 L32 38 M32 6 L27 15 L37 15 Z M20 38 H44 M32 38 V56 M25 47 H39"/></svg></span>
+      <div class="game-cover has-photo" style="--tile-accent:#a970ff;--tile-accent2:#5b2a9e">
+        <img class="tile-photo" src="../assets/posters/final-fantasy-7-remake.jpg" alt="Final Fantasy VII Remake cover art" loading="lazy" decoding="async">
         <div class="tile-vignette"></div>
-        <span class="poster-badge"><span class="tile-initial">FF</span></span>
       </div>
       <div class="game-title-block">
         <div class="chips"><span class="chip">Action RPG</span><span class="chip">2020</span></div>
@@ -88,7 +86,7 @@
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.2-4.6-10-9.2C.4 8.6 2 5 5.6 5c2 0 3.4 1 4.9 2.9C11.9 6 13.3 5 15.3 5 19 5 20.6 8.6 19 11.8 16.8 16.4 12 21 12 21z"/></svg>
             <span class="wishlist-label">Add to wishlist</span>
           </button>
-          <div class="share-row" id="share-row"></div>
+          <div class="gc-share-row" id="gc-share-row"></div>
         </div>
         <div class="game-meta-list">
           <div>Release date<strong>April 10, 2020</strong></div>
@@ -207,7 +205,7 @@
     title: "Final Fantasy VII Remake",
     platforms: ["PS4", "PS5", "PC"],
   });
-  GameCodex.renderShareButtons(document.getElementById("share-row"), "Final Fantasy VII Remake", "https://aesmaeily.github.io/GameStoryHub/games/final-fantasy-7-remake.html");
+  GameCodex.renderShareButtons(document.getElementById("gc-share-row"), "Final Fantasy VII Remake", "https://aesmaeily.github.io/GameStoryHub/games/final-fantasy-7-remake.html");
   GameCodex.paintWishlistButtons(document);
   GameCodex.renderReviewsSection(document.getElementById("reviews-card"), {
     slug: SLUG,
