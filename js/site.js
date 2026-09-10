@@ -792,6 +792,83 @@
   }
   GC.renderPriceCard = renderPriceCard;
 
+  // ---------- price-history mini-chart (P2 #10) ----------
+  // Reads public.price_snapshots — one row per game per day, written once
+  // daily by the "daily-price-job" Supabase Edge Function (same CheapShark
+  // scope as the price card above: PC storefronts only). Renders a small
+  // inline-SVG line chart with an honest empty state until enough days of
+  // history have accumulated (tracking only started 2026-09-10).
+  function priceHistoryEmptyHTML(note) {
+    return `<h3>Price history</h3><p class="price-history-empty">${note}</p>`;
+  }
+
+  function renderPriceHistoryChart(container, game) {
+    if (!container) return;
+    const platforms = game.platforms || [];
+    if (!isPcPlatform(platforms)) {
+      container.innerHTML = priceHistoryEmptyHTML("Price history is tracked for PC storefronts only.");
+      return;
+    }
+    container.innerHTML = `<h3>Price history</h3><p class="price-history-empty">Loading…</p>`;
+    getSupabaseClient().then((client) => {
+      if (!client) {
+        container.innerHTML = priceHistoryEmptyHTML("Price history is temporarily unavailable.");
+        return null;
+      }
+      return client
+        .from("price_snapshots")
+        .select("price, captured_on")
+        .eq("game_slug", game.slug)
+        .order("captured_on", { ascending: true })
+        .limit(120)
+        .then(({ data, error }) => {
+          if (error || !data || data.length === 0) {
+            container.innerHTML = priceHistoryEmptyHTML("Price tracking started today — check back soon for a trend.");
+            return;
+          }
+          if (data.length === 1) {
+            const p = parseFloat(data[0].price);
+            container.innerHTML =
+              `<h3>Price history</h3>` +
+              `<p class="price-history-empty">Tracking started today at $${p.toFixed(2)} — a trend will appear as more days come in.</p>`;
+            return;
+          }
+          const points = data.map((r) => ({ price: parseFloat(r.price), date: r.captured_on }));
+          const prices = points.map((p) => p.price);
+          const min = Math.min.apply(null, prices), max = Math.max.apply(null, prices);
+          const w = 280, h = 64, pad = 4;
+          const span = Math.max(max - min, 0.01);
+          const coords = points.map((p, i) => {
+            const x = points.length === 1 ? w / 2 : (i / (points.length - 1)) * (w - pad * 2) + pad;
+            const y = h - pad - ((p.price - min) / span) * (h - pad * 2);
+            return [x, y];
+          });
+          const linePath = coords.map((c, i) => (i === 0 ? "M" : "L") + c[0].toFixed(1) + "," + c[1].toFixed(1)).join(" ");
+          const areaPath = linePath + ` L${coords[coords.length - 1][0].toFixed(1)},${h} L${coords[0][0].toFixed(1)},${h} Z`;
+          const last = coords[coords.length - 1];
+          const low = points.reduce((a, b) => (b.price < a.price ? b : a));
+          container.innerHTML =
+            `<h3>Price history</h3>` +
+            `<p class="price-history-sub">Cheapest tracked PC price, last ${points.length} days.</p>` +
+            `<svg class="price-history-svg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">` +
+            `<defs><linearGradient id="phg" x1="0" y1="0" x2="0" y2="1">` +
+            `<stop offset="0%" style="stop-color:var(--accent2);stop-opacity:0.5"/>` +
+            `<stop offset="100%" style="stop-color:var(--accent2);stop-opacity:0"/></linearGradient></defs>` +
+            `<path fill="url(#phg)" d="${areaPath}"/>` +
+            `<path class="price-history-line" d="${linePath}"/>` +
+            `<circle class="price-history-dot" cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="3"/>` +
+            `</svg>` +
+            `<div class="price-history-stats">` +
+            `<span>Lowest: <strong>$${low.price.toFixed(2)}</strong></span>` +
+            `<span>Now: <strong>$${points[points.length - 1].price.toFixed(2)}</strong></span>` +
+            `</div>`;
+        });
+    }).catch(() => {
+      container.innerHTML = priceHistoryEmptyHTML("Price history is temporarily unavailable.");
+    });
+  }
+  GC.renderPriceHistoryChart = renderPriceHistoryChart;
+
   // ---------- affiliate store search links (P1 #6: monetization) ----------
   // CheapShark's free API gives no direct product URL for these stores
   // (only its own redirect — see renderPriceCard above), so this builds
