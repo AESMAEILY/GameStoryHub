@@ -206,6 +206,23 @@ __GAMES_JSON__
       '</p>';
   }
 
+  // Price-history mini-chart (mirrors GC.renderPriceHistoryChart in
+  // js/site.js) is scoped out of this preview for the same reason as
+  // renderPriceCardPreview above, plus it needs a Supabase client this
+  // sandbox doesn't load -- shows the same card shape with a note instead.
+  function renderPriceHistoryPreview(container, game) {
+    if (!container) return;
+    var isPc = game.platforms.some(function (p) {
+      var s = p.toLowerCase();
+      return s.indexOf("pc") !== -1 || s.indexOf("mac") !== -1;
+    });
+    container.innerHTML = '<h3>Price history</h3><p class="price-history-empty">' +
+      (isPc
+        ? "The live site tracks this game's price daily and charts it here &mdash; not simulated in this local preview."
+        : "Price history is tracked for PC storefronts only.") +
+      '</p>';
+  }
+
   // "Best deals this week" (mirrors GC.renderDealsBanner/renderDealsGrid in
   // js/site.js) is scoped out the same way renderPriceCardPreview is above
   // -- it needs a live CheapShark fetch this sandbox may block -- so both
@@ -249,13 +266,13 @@ __GAMES_JSON__
       { label: "Reddit", href: "https://www.reddit.com/submit?url=" + u + "&title=" + t },
       { label: "WhatsApp", href: "https://wa.me/?text=" + t + "%20" + u },
     ];
-    var nativeBtn = (navigator.share) ? '<button type="button" class="share-btn share-native" data-share-native>Share &#8599;</button>' : "";
-    container.innerHTML = '<span class="share-label">Share</span>' + nativeBtn +
-      targets.map(function (x) { return '<a class="share-btn" target="_blank" rel="noopener" href="' + x.href + '" aria-label="Share on ' + x.label + '">' + esc(x.label) + '</a>'; }).join("") +
-      '<button type="button" class="share-btn share-copy" data-share-copy>Copy link</button>';
-    var nativeEl = container.querySelector("[data-share-native]");
+    var nativeBtn = (navigator.share) ? '<button type="button" class="gc-share-btn gc-share-native" data-gc-share-native>Share &#8599;</button>' : "";
+    container.innerHTML = '<span class="gc-share-label">Share</span>' + nativeBtn +
+      targets.map(function (x) { return '<a class="gc-share-btn" target="_blank" rel="noopener" href="' + x.href + '" aria-label="Share on ' + x.label + '">' + esc(x.label) + '</a>'; }).join("") +
+      '<button type="button" class="gc-share-btn gc-share-copy" data-gc-share-copy>Copy link</button>';
+    var nativeEl = container.querySelector("[data-gc-share-native]");
     if (nativeEl) nativeEl.addEventListener("click", function () { navigator.share({ title: title, url: url }).catch(function () {}); });
-    var copyEl = container.querySelector("[data-share-copy]");
+    var copyEl = container.querySelector("[data-gc-share-copy]");
     if (copyEl) {
       copyEl.addEventListener("click", function () {
         function done() {
@@ -1040,7 +1057,7 @@ __GAMES_JSON__
               '</div>' +
               '<div class="hero-actions">' +
                 '<button type="button" class="wishlist-btn" id="wishlist-btn" aria-pressed="false">' + HEART_ICON + '<span class="wishlist-label">Add to wishlist</span></button>' +
-                '<div class="share-row" id="share-row"></div>' +
+                '<div class="gc-share-row" id="gc-share-row"></div>' +
               '</div>' +
             '</div>' +
           '</div>' +
@@ -1062,6 +1079,7 @@ __GAMES_JSON__
           '</div>' +
           '<aside>' +
             '<div class="side-card" id="price-card"></div>' +
+            '<div class="side-card" id="price-history-card"></div>' +
             '<div class="affiliate-row" id="affiliate-row"></div>' +
             '<div class="side-card"><h3>Platforms</h3><div class="platform-tags">' + game.platforms.map(function (p) { return '<span>' + escapeHtml(p) + '</span>'; }).join("") + '</div></div>' +
             '<div class="side-card"><h3>Details</h3><ul>' +
@@ -1095,8 +1113,9 @@ __GAMES_JSON__
     wireTilt(document.querySelector(".game-hero-grid"));
     mountYouTubePlayer("yt-player-main", game.youtube.id);
     renderPriceCardPreview(document.getElementById("price-card"), game);
+    renderPriceHistoryPreview(document.getElementById("price-history-card"), game);
     renderAffiliateRowPreview(document.getElementById("affiliate-row"), game);
-    renderShareButtonsPreview(document.getElementById("share-row"), game.title, PREVIEW_SITE_URL + "/games/" + slug + ".html");
+    renderShareButtonsPreview(document.getElementById("gc-share-row"), game.title, PREVIEW_SITE_URL + "/games/" + slug + ".html");
     wireWishlistButton(document.getElementById("wishlist-btn"), slug);
     renderReviewsSectionPreview(document.getElementById("reviews-card"), game);
     window.scrollTo(0, 0);
