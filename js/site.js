@@ -698,10 +698,12 @@
         seen[store] = true;
         rows.push({
           store,
+          storeID: String(d.storeID),
           price: parseFloat(d.salePrice),
           normal: parseFloat(d.normalPrice),
           savings: parseFloat(d.savings),
           dealID: d.dealID,
+          steamAppID: d.steamAppID || null,
         });
       });
       rows.sort((a, b) => a.price - b.price);
@@ -710,22 +712,40 @@
         container.innerHTML = fallbackPriceHTML(title, "No live pricing found for this title right now.");
         return;
       }
+      // Each row links to that specific store's own page whenever we can
+      // build one directly (currently: Steam, via its stable numeric app
+      // ID) so "Steam" really opens Steam, not a shared middleman page.
+      // Every other store still routes through CheapShark's own deal
+      // redirect — the only outbound link its free API exposes — which
+      // does land on that store's real page, just via a brief CheapShark
+      // hop (sometimes with its own bot-check page) first.
+      function storeLinkHref(r) {
+        if (r.storeID === "1" && r.steamAppID) {
+          return "https://store.steampowered.com/app/" + encodeURIComponent(r.steamAppID) + "/";
+        }
+        return "https://www.cheapshark.com/redirect?dealID=" + encodeURIComponent(r.dealID);
+      }
       container.innerHTML =
         `<h3>Where to buy</h3>` +
         `<ul class="price-list">` +
         top.map((r) => {
           const off = r.savings > 1 ? `<span class="price-off">-${Math.round(r.savings)}%</span>` : "";
           const was = r.normal > r.price + 0.001 ? `<span class="price-was">$${r.normal.toFixed(2)}</span>` : "";
+          const direct = r.storeID === "1" && r.steamAppID;
+          const label = direct ? "View on Steam ↗" : "Get deal ↗";
+          const title = direct
+            ? "Opens the Steam store page directly"
+            : `Opens via CheapShark's price-tracking link, then lands on ${escapeHtml(r.store)}`;
           return (
             `<li class="price-row">` +
             `<span class="price-store">${escapeHtml(r.store)}</span>` +
             `<span class="price-amounts">${was}<span class="price-now">$${r.price.toFixed(2)}</span>${off}</span>` +
-            `<a class="price-go" target="_blank" rel="noopener" href="https://www.cheapshark.com/redirect?dealID=${encodeURIComponent(r.dealID)}">Get deal ↗</a>` +
+            `<a class="price-go" target="_blank" rel="noopener" title="${title}" href="${storeLinkHref(r)}">${label}</a>` +
             `</li>`
           );
         }).join("") +
         `</ul>` +
-        `<p class="price-attribution">Prices via <a href="https://www.cheapshark.com" target="_blank" rel="noopener">CheapShark</a>, live · USD · PC storefronts.</p>`;
+        `<p class="price-attribution">Prices via <a href="https://www.cheapshark.com" target="_blank" rel="noopener">CheapShark</a>, live · USD · PC storefronts. Steam links go straight to the Steam store page; other stores route through CheapShark's own deal link.</p>`;
     }).catch(() => {
       container.innerHTML = fallbackPriceHTML(title, "Price checking is temporarily unavailable.");
     });
