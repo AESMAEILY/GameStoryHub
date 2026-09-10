@@ -72,6 +72,7 @@
 
 <section class="hero">
   <div class="hero-bg" id="particles-host"></div>
+  <div class="hero-carousel-bg" id="hero-carousel-bg" aria-hidden="true"></div>
   <div class="container">
     <div class="hero-brand">
       <span class="hero-logo" aria-hidden="true">
@@ -221,6 +222,7 @@
     if (!upcoming || upcoming.length === 0) return;
     GameCodex.buildCarousel(upcoming, {
       root: document.getElementById("hero-carousel"),
+      bgHost: document.getElementById("hero-carousel-bg"),
       stage: document.getElementById("carousel-stage"),
       title: document.getElementById("carousel-title"),
       dots: document.getElementById("carousel-dots"),
