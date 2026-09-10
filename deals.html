@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Browse Games — Digi-games</title>
-<meta name="description" content="Search and filter all 50 games on Digi-games by title, genre, or platform.">
-<link rel="canonical" href="https://aesmaeily.github.io/GameStoryHub/browse.html">
+<title>Best Deals This Week — Digi-games</title>
+<meta name="description" content="Live PC-storefront discounts across every game on Digi-games, ranked by savings — updated regularly via CheapShark.">
+<link rel="canonical" href="https://aesmaeily.github.io/GameStoryHub/deals.html">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='26' fill='%237c8cff'/%3E%3Ctext x='50' y='65' font-size='42' font-weight='700' text-anchor='middle' font-family='Arial' fill='%2306060a'%3EDG%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,13 +14,13 @@
 <style>:root { --accent: #7c8cff; --accent2: #3ee6c4; }</style>
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Digi-games">
-<meta property="og:title" content="Browse Games — Digi-games">
-<meta property="og:description" content="Search and filter all 50 games on Digi-games by title, genre, or platform.">
-<meta property="og:url" content="https://aesmaeily.github.io/GameStoryHub/browse.html">
+<meta property="og:title" content="Best Deals This Week — Digi-games">
+<meta property="og:description" content="Live PC-storefront discounts across every game on Digi-games, ranked by savings — updated regularly via CheapShark.">
+<meta property="og:url" content="https://aesmaeily.github.io/GameStoryHub/deals.html">
 <meta property="og:image" content="https://aesmaeily.github.io/GameStoryHub/assets/og-default.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Browse Games — Digi-games">
-<meta name="twitter:description" content="Search and filter all 50 games on Digi-games by title, genre, or platform.">
+<meta name="twitter:title" content="Best Deals This Week — Digi-games">
+<meta name="twitter:description" content="Live PC-storefront discounts across every game on Digi-games, ranked by savings — updated regularly via CheapShark.">
 <meta name="twitter:image" content="https://aesmaeily.github.io/GameStoryHub/assets/og-default.png">
 </head>
 <body>
@@ -34,7 +34,7 @@
       <svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10.5L12 4l9 6.5"/><path d="M5 9.5V20h14V9.5"/><path d="M9 20v-6h6v6"/></svg>
       <span class="dock-label">Home</span>
     </a>
-    <a href="browse.html" class="dock-link active" data-route="browse">
+    <a href="browse.html" class="dock-link" data-route="browse">
       <svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg>
       <span class="dock-label">Browse</span>
     </a>
@@ -42,7 +42,7 @@
       <svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7.2-4.6-10-9.2C.4 8.6 2 5 5.6 5c2 0 3.4 1 4.9 2.9C11.9 6 13.3 5 15.3 5 19 5 20.6 8.6 19 11.8 16.8 16.4 12 21 12 21z"/></svg>
       <span class="dock-label">Wishlist</span>
     </a>
-    <a href="deals.html" class="dock-link" data-route="deals">
+    <a href="deals.html" class="dock-link active" data-route="deals">
       <svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12L12 3h7a2 2 0 012 2v7l-9 9a2 2 0 01-2.8 0l-6.2-6.2a2 2 0 010-2.8z"/><circle cx="15.5" cy="8.5" r="1.5" fill="currentColor" stroke="none"/></svg>
       <span class="dock-label">Deals</span>
     </a>
@@ -68,43 +68,20 @@
 <main id="main">
 <section class="section" style="padding-bottom:0;">
   <div class="container">
-    <div class="section-head">
+    <div class="deals-page-head">
       <div>
-        <h2>Browse the hub</h2>
-        <p>Live search across all 50 titles — filters apply instantly, no reload.</p>
+        <h1 style="font-size:clamp(1.7rem,3.4vw,2.4rem);margin:0 0 6px;">🔥 Best deals this week</h1>
+        <p style="color:var(--text-dim);margin:0;max-width:60ch;">Every discount currently live across our PC-storefront titles, ranked by savings. Console-only games aren't covered here — CheapShark's free API is PC storefronts only (Steam, GOG, Epic, Fanatical, and more).</p>
       </div>
+      <span class="deals-updated-note" id="deals-updated-note"></span>
     </div>
-
-    <div class="browse-toolbar">
-      <div class="browse-search">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-        <input type="search" id="browse-search-input" placeholder="Search by title, genre, developer…" aria-label="Search games" autocomplete="off">
-      </div>
-      <div class="select-wrap">
-        <select id="platform-select" aria-label="Filter by platform">
-          <option value="">All platforms</option>
-        </select>
-      </div>
-      <div class="select-wrap">
-        <select id="sort-select" aria-label="Sort games">
-          <option value="date-desc">Newest first</option>
-          <option value="date-asc">Oldest first</option>
-          <option value="rating-desc">Top rated</option>
-          <option value="az">Title A–Z</option>
-          <option value="za">Title Z–A</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="filter-row" id="genre-filter-row"></div>
-    <p class="browse-count" id="result-count"></p>
   </div>
 </section>
 
-<section class="section" style="padding-top:0;">
+<section class="section" style="padding-top:16px;">
   <div class="container">
-    <div class="grid" id="browse-grid">
-      <div class="no-results">Loading games…</div>
+    <div class="deals-grid" id="deals-grid">
+      <div class="deals-loading">Checking current prices…</div>
     </div>
   </div>
 </section>
@@ -139,84 +116,12 @@
   GameCodex.initDockNav();
   GameCodex.wireNewsletterForm(document.getElementById("newsletter-form"));
 
-  var state = { q: "", genre: "", platform: "", sort: "date-desc" };
-  var params = new URLSearchParams(window.location.search);
-  if (params.get("q")) state.q = params.get("q");
-  if (params.get("genre")) state.genre = params.get("genre");
-
-  var searchInput = document.getElementById("browse-search-input");
-  var platformSelect = document.getElementById("platform-select");
-  var sortSelect = document.getElementById("sort-select");
-  var genreRow = document.getElementById("genre-filter-row");
-  var grid = document.getElementById("browse-grid");
-  var countEl = document.getElementById("result-count");
-
-  searchInput.value = state.q;
-
-  function applySortDate(a, b, dir) {
-    return dir === "date-desc" ? (a.releaseDate < b.releaseDate ? 1 : -1) : (a.releaseDate > b.releaseDate ? 1 : -1);
-  }
-
-  function render(games) {
-    var q = state.q.trim().toLowerCase();
-    var filtered = games.filter(function (g) {
-      var matchesQ = !q || g.title.toLowerCase().includes(q) ||
-        g.genres.some(function (x) { return x.toLowerCase().includes(q); }) ||
-        g.developer.toLowerCase().includes(q);
-      var matchesGenre = !state.genre || g.genres.includes(state.genre);
-      var matchesPlatform = !state.platform || g.platforms.includes(state.platform);
-      return matchesQ && matchesGenre && matchesPlatform;
-    });
-
-    filtered.sort(function (a, b) {
-      if (state.sort === "az") return a.title.localeCompare(b.title);
-      if (state.sort === "za") return b.title.localeCompare(a.title);
-      if (state.sort === "rating-desc") {
-        // Sorts by the official critic score — the one rating every game
-        // actually has, rather than the (often sparse) player average.
-        var av = (a.officialScore && typeof a.officialScore.value === "number") ? a.officialScore.value : -1;
-        var bv = (b.officialScore && typeof b.officialScore.value === "number") ? b.officialScore.value : -1;
-        return bv - av;
-      }
-      return applySortDate(a, b, state.sort);
-    });
-
-    countEl.textContent = filtered.length + (filtered.length === 1 ? " game" : " games") +
-      (state.q || state.genre || state.platform ? " matching your filters." : " in the hub.");
-    GameCodex.renderGrid(grid, filtered);
-  }
-
   GameCodex.ready.then(function (games) {
-    // populate platform options
-    var platforms = Array.from(new Set(games.flatMap(function (g) { return g.platforms; }))).sort();
-    platforms.forEach(function (p) {
-      var opt = document.createElement("option");
-      opt.value = p; opt.textContent = p;
-      platformSelect.appendChild(opt);
-    });
-
-    // populate genre pills
-    var genres = Array.from(new Set(games.flatMap(function (g) { return g.genres; }))).sort();
-    function renderGenreRow() {
-      genreRow.innerHTML = ['<button class="filter-pill' + (state.genre === "" ? " active" : "") + '" data-genre="">All genres</button>']
-        .concat(genres.map(function (g) {
-          return '<button class="filter-pill' + (state.genre === g ? " active" : "") + '" data-genre="' + g + '">' + g + '</button>';
-        })).join("");
-      genreRow.querySelectorAll(".filter-pill").forEach(function (btn) {
-        btn.addEventListener("click", function () {
-          state.genre = btn.dataset.genre;
-          renderGenreRow();
-          render(games);
-        });
-      });
-    }
-    renderGenreRow();
-
-    render(games);
-
-    searchInput.addEventListener("input", function () { state.q = searchInput.value; render(games); });
-    platformSelect.addEventListener("change", function () { state.platform = platformSelect.value; render(games); });
-    sortSelect.addEventListener("change", function () { state.sort = sortSelect.value; render(games); });
+    GameCodex.renderDealsGrid(
+      document.getElementById("deals-grid"),
+      games,
+      document.getElementById("deals-updated-note")
+    );
 
     GameCodex.wireSearchWidget(
       document.getElementById("nav-search-input"),

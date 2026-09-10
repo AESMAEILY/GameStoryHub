@@ -45,6 +45,10 @@
       <svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7.2-4.6-10-9.2C.4 8.6 2 5 5.6 5c2 0 3.4 1 4.9 2.9C11.9 6 13.3 5 15.3 5 19 5 20.6 8.6 19 11.8 16.8 16.4 12 21 12 21z"/></svg>
       <span class="dock-label">Wishlist</span>
     </a>
+    <a href="deals.html" class="dock-link" data-route="deals">
+      <svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12L12 3h7a2 2 0 012 2v7l-9 9a2 2 0 01-2.8 0l-6.2-6.2a2 2 0 010-2.8z"/><circle cx="15.5" cy="8.5" r="1.5" fill="currentColor" stroke="none"/></svg>
+      <span class="dock-label">Deals</span>
+    </a>
     <button type="button" class="dock-link dock-search-toggle" id="dock-search-toggle" aria-label="Search games" aria-haspopup="dialog">
       <svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
       <span class="dock-label">Search</span>
@@ -130,6 +134,21 @@
   </div>
 </section>
 
+<section class="section" id="deals-section" data-deals-section style="padding-bottom:0;">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <h2>🔥 Best deals this week</h2>
+        <p>Live discounts across our PC-storefront titles, via CheapShark.</p>
+      </div>
+      <a class="see-all" href="deals.html">See all deals →</a>
+    </div>
+    <div class="deals-strip" id="deals-strip">
+      <div class="deals-loading">Finding this week's best prices…</div>
+    </div>
+  </div>
+</section>
+
 <section class="section">
   <div class="container">
     <div class="section-head">
@@ -188,6 +207,10 @@
   GameCodex.initDockNav();
   GameCodex.spawnSparkles(document.querySelector(".hero-brand"));
   GameCodex.wireNewsletterForm(document.getElementById("newsletter-form"));
+
+  GameCodex.ready.then(function (games) {
+    GameCodex.renderDealsBanner(document.getElementById("deals-strip"), games, { limit: 6 });
+  });
 
   GameCodex.ready.then(function (games) {
     var trending = games.slice(0, 12); // newest 12 releases
