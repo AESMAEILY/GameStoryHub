@@ -645,6 +645,18 @@
   }
   GC.isPcPlatform = isPcPlatform;
 
+  // Shared by renderPriceCard() and the deals-banner/deals-page modules
+  // below: whenever we can build a real, direct store URL (currently just
+  // Steam, via its stable numeric app ID) we use it; every other store
+  // routes through CheapShark's own deal redirect — the only outbound
+  // link its free API exposes for it.
+  function storeLinkHref(r) {
+    if (String(r.storeID) === "1" && r.steamAppID) {
+      return "https://store.steampowered.com/app/" + encodeURIComponent(r.steamAppID) + "/";
+    }
+    return "https://www.cheapshark.com/redirect?dealID=" + encodeURIComponent(r.dealID);
+  }
+
   function fallbackPriceHTML(title, note) {
     return (
       `<h3>Where to buy</h3>` +
@@ -712,19 +724,6 @@
         container.innerHTML = fallbackPriceHTML(title, "No live pricing found for this title right now.");
         return;
       }
-      // Each row links to that specific store's own page whenever we can
-      // build one directly (currently: Steam, via its stable numeric app
-      // ID) so "Steam" really opens Steam, not a shared middleman page.
-      // Every other store still routes through CheapShark's own deal
-      // redirect — the only outbound link its free API exposes — which
-      // does land on that store's real page, just via a brief CheapShark
-      // hop (sometimes with its own bot-check page) first.
-      function storeLinkHref(r) {
-        if (r.storeID === "1" && r.steamAppID) {
-          return "https://store.steampowered.com/app/" + encodeURIComponent(r.steamAppID) + "/";
-        }
-        return "https://www.cheapshark.com/redirect?dealID=" + encodeURIComponent(r.dealID);
-      }
       container.innerHTML =
         `<h3>Where to buy</h3>` +
         `<ul class="price-list">` +
@@ -751,6 +750,257 @@
     });
   }
   GC.renderPriceCard = renderPriceCard;
+
+  // ---------- affiliate store search links (P1 #6: monetization) ----------
+  // CheapShark's free API gives no direct product URL for these stores
+  // (only its own redirect — see renderPriceCard above), so this builds
+  // real, direct search-result links on each store's own site instead,
+  // and wraps them through an affiliate deep-link template when one is
+  // configured in js/config.js (window.GC_CONFIG.affiliateLinkTemplates).
+  // Until the user is accepted into each program and fills in a real
+  // template, these are still genuinely useful direct links — they just
+  // don't earn a commission yet, same "honest until it's real" pattern
+  // used for officialScore/subscriber-count elsewhere on this site.
+  const AFFILIATE_STORES = [
+    { key: "greenmangaming", label: "Green Man Gaming", searchUrl: (t) => "https://www.greenmangaming.com/search/?query=" + encodeURIComponent(t) },
+    { key: "fanatical", label: "Fanatical", searchUrl: (t) => "https://www.fanatical.com/en/search?search=" + encodeURIComponent(t) },
+    { key: "gog", label: "GOG", searchUrl: (t) => "https://www.gog.com/en/games?query=" + encodeURIComponent(t) },
+  ];
+
+  function wrapAffiliate(key, url) {
+    const templates = (window.GC_CONFIG && window.GC_CONFIG.affiliateLinkTemplates) || {};
+    const tmpl = templates[key];
+    if (tmpl && tmpl.indexOf("{url}") !== -1) {
+      return tmpl.replace("{url}", encodeURIComponent(url));
+    }
+    return url;
+  }
+
+  function affiliateSearchLinks(game) {
+    if (!isPcPlatform(game.platforms)) return [];
+    return AFFILIATE_STORES.map((s) => ({ label: s.label, href: wrapAffiliate(s.key, s.searchUrl(game.title)) }));
+  }
+  GC.affiliateSearchLinks = affiliateSearchLinks;
+
+  function renderAffiliateRow(container, game) {
+    if (!container) return;
+    const links = affiliateSearchLinks(game);
+    if (links.length === 0) { container.innerHTML = ""; return; }
+    container.innerHTML =
+      `<p class="affiliate-row-label">Also search for it at</p>` +
+      `<div class="affiliate-links">` +
+      links.map((l) => `<a class="affiliate-link" target="_blank" rel="noopener sponsored" href="${l.href}">${escapeHtml(l.label)} ↗</a>`).join("") +
+      `</div>`;
+  }
+  GC.renderAffiliateRow = renderAffiliateRow;
+
+  // ---------- "Best deals this week" (P1 #7 + landing banner) ----------
+  // Finds each PC-inclusive game's single best current discount via
+  // CheapShark, then ranks across the whole catalog by savings %.
+  // Requests are throttled (a handful in flight at once, not 40
+  // simultaneously) and the aggregated result is cached in localStorage
+  // for a few hours so repeat visits in the same window don't re-hit the
+  // API on every page load — "this week" is a real refresh cadence, not a
+  // live-every-second feed. PC storefronts only, same CheapShark-coverage
+  // limit as the price-comparison card above.
+  const DEALS_CACHE_KEY = "gc_deals_cache_v1";
+  const DEALS_CACHE_MAX_AGE_MS = 6 * 60 * 60 * 1000; // 6 hours
+
+  function fetchBestDealForGame(game) {
+    const dealsUrl = CHEAPSHARK_BASE + "/deals?title=" + encodeURIComponent(game.title) + "&exact=false&limit=15&sortBy=Savings&desc=1";
+    return Promise.all([
+      fetch(dealsUrl).then((r) => (r.ok ? r.json() : [])),
+      loadStoreMap(),
+    ]).then(([deals, storeMap]) => {
+      if (!Array.isArray(deals) || deals.length === 0) return null;
+      let best = null;
+      deals.forEach((d) => {
+        const savings = parseFloat(d.savings);
+        if (!best || savings > best.savings) {
+          best = {
+            slug: game.slug,
+            title: game.title,
+            accent: game.accent,
+            accent2: game.accent2,
+            poster: game.poster || null,
+            store: storeMap[d.storeID] || ("Store " + d.storeID),
+            storeID: String(d.storeID),
+            price: parseFloat(d.salePrice),
+            normal: parseFloat(d.normalPrice),
+            savings,
+            dealID: d.dealID,
+            steamAppID: d.steamAppID || null,
+          };
+        }
+      });
+      return best;
+    }).catch(() => null);
+  }
+
+  // Runs `items` through `worker` with at most `limit` in flight at once.
+  function mapWithConcurrency(items, limit, worker) {
+    return new Promise((resolve) => {
+      const results = new Array(items.length);
+      let next = 0, active = 0, done = 0;
+      if (items.length === 0) { resolve(results); return; }
+      function pump() {
+        while (active < limit && next < items.length) {
+          const i = next++;
+          active++;
+          worker(items[i]).then((r) => { results[i] = r; }).catch(() => { results[i] = null; }).finally(() => {
+            active--; done++;
+            if (done === items.length) resolve(results);
+            else pump();
+          });
+        }
+      }
+      pump();
+    });
+  }
+
+  function readDealsCache() {
+    try {
+      const raw = localStorage.getItem(DEALS_CACHE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!parsed || !Array.isArray(parsed.deals) || typeof parsed.at !== "number") return null;
+      if (Date.now() - parsed.at > DEALS_CACHE_MAX_AGE_MS) return null;
+      return parsed;
+    } catch (e) { return null; }
+  }
+
+  function writeDealsCache(deals) {
+    try { localStorage.setItem(DEALS_CACHE_KEY, JSON.stringify({ at: Date.now(), deals })); } catch (e) { /* private mode / quota — skip caching */ }
+  }
+
+  let dealsPromise = null;
+  // Returns a promise of ALL PC games' best current deal, sorted by
+  // savings desc (savings > 1% only). Callers slice to the count they
+  // need so the home banner and the full deals page share one fetch.
+  function getWeeklyDeals(games) {
+    if (dealsPromise) return dealsPromise;
+    const cached = readDealsCache();
+    if (cached) {
+      dealsPromise = Promise.resolve(cached.deals);
+      return dealsPromise;
+    }
+    const pcGames = games.filter((g) => isPcPlatform(g.platforms));
+    dealsPromise = mapWithConcurrency(pcGames, 5, fetchBestDealForGame).then((results) => {
+      const deals = results.filter((d) => d && d.savings > 1).sort((a, b) => b.savings - a.savings);
+      writeDealsCache(deals);
+      return deals;
+    });
+    return dealsPromise;
+  }
+  GC.getWeeklyDeals = getWeeklyDeals;
+
+  function dealCardHTML(d) {
+    const artHTML = d.poster
+      ? `<img class="deal-art-img" src="${ROOT}${d.poster}" alt="" loading="lazy">`
+      : `<div class="deal-art-mono" style="--tile-accent:${d.accent};--tile-accent2:${d.accent2}">${initials(d.title)}</div>`;
+    const direct = d.storeID === "1" && d.steamAppID;
+    const label = direct ? "View on Steam ↗" : "Get deal ↗";
+    const goTitle = direct ? "Opens the Steam store page directly" : "Opens via CheapShark's price-tracking link";
+    return (
+      `<div class="deal-card">` +
+      `<a class="deal-art" href="${gamePath(d.slug)}" aria-label="${escapeHtml(d.title)}">${artHTML}<span class="deal-off">-${Math.round(d.savings)}%</span></a>` +
+      `<div class="deal-body">` +
+      `<a class="deal-title" href="${gamePath(d.slug)}">${escapeHtml(d.title)}</a>` +
+      `<span class="deal-store">${escapeHtml(d.store)}</span>` +
+      `<span class="deal-price"><span class="deal-was">$${d.normal.toFixed(2)}</span><span class="deal-now">$${d.price.toFixed(2)}</span></span>` +
+      `<a class="deal-go" target="_blank" rel="noopener" title="${goTitle}" href="${storeLinkHref(d)}">${label}</a>` +
+      `</div>` +
+      `</div>`
+    );
+  }
+
+  function hideDealsSection(container) {
+    container.innerHTML = "";
+    const section = container.closest("[data-deals-section]");
+    if (section) section.hidden = true;
+  }
+
+  // Home-page promo strip — a handful of the best current discounts, with
+  // a "See all deals" link to deals.html. Quietly hides its whole section
+  // if CheapShark has nothing right now, rather than showing an empty card.
+  function renderDealsBanner(container, games, opts) {
+    if (!container) return;
+    const limit = (opts && opts.limit) || 6;
+    container.innerHTML = `<div class="deals-loading">Finding this week's best prices…</div>`;
+    getWeeklyDeals(games).then((deals) => {
+      if (!deals || deals.length === 0) { hideDealsSection(container); return; }
+      container.innerHTML = deals.slice(0, limit).map(dealCardHTML).join("");
+    }).catch(() => hideDealsSection(container));
+  }
+  GC.renderDealsBanner = renderDealsBanner;
+
+  // Full "Best deals this week" page grid — every PC game currently
+  // discounted, ranked by savings %, plus a last-updated note.
+  function renderDealsGrid(container, games, noteEl) {
+    if (!container) return;
+    const pcCount = games.filter((g) => isPcPlatform(g.platforms)).length;
+    container.innerHTML = `<div class="deals-loading">Checking current prices across ${pcCount} PC-storefront titles…</div>`;
+    getWeeklyDeals(games).then((deals) => {
+      if (!deals || deals.length === 0) {
+        container.innerHTML = `<div class="no-results"><strong>No live discounts right now.</strong>Check back soon — new deals show up here as they appear.</div>`;
+        return;
+      }
+      container.innerHTML = deals.map(dealCardHTML).join("");
+      if (noteEl) {
+        const cached = readDealsCache();
+        const at = cached ? new Date(cached.at) : new Date();
+        noteEl.textContent = "Updated " + at.toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) + " · " + deals.length + " deals · PC storefronts only, via CheapShark.";
+      }
+    }).catch(() => {
+      container.innerHTML = `<div class="no-results"><strong>Price checking is temporarily unavailable.</strong>Try again in a bit.</div>`;
+    });
+  }
+  GC.renderDealsGrid = renderDealsGrid;
+
+  // ---------- social share buttons (P1 #8) ----------
+  function shareTargets(url, title) {
+    const u = encodeURIComponent(url), t = encodeURIComponent(title);
+    return [
+      { key: "x", label: "X", href: "https://twitter.com/intent/tweet?url=" + u + "&text=" + t },
+      { key: "facebook", label: "Facebook", href: "https://www.facebook.com/sharer/sharer.php?u=" + u },
+      { key: "reddit", label: "Reddit", href: "https://www.reddit.com/submit?url=" + u + "&title=" + t },
+      { key: "whatsapp", label: "WhatsApp", href: "https://wa.me/?text=" + t + "%20" + u },
+    ];
+  }
+
+  // No network calls at all — safe to use identically in the live site
+  // and the single-file preview bundle.
+  function renderShareButtons(container, title, url) {
+    if (!container) return;
+    const targets = shareTargets(url, title);
+    const nativeBtn = (navigator.share) ? `<button type="button" class="share-btn share-native" data-share-native>Share ↗</button>` : "";
+    container.innerHTML =
+      `<span class="share-label">Share</span>` +
+      nativeBtn +
+      targets.map((t) => `<a class="share-btn" target="_blank" rel="noopener" href="${t.href}" aria-label="Share on ${t.label}">${escapeHtml(t.label)}</a>`).join("") +
+      `<button type="button" class="share-btn share-copy" data-share-copy>Copy link</button>`;
+
+    const nativeEl = container.querySelector("[data-share-native]");
+    if (nativeEl) nativeEl.addEventListener("click", () => { navigator.share({ title, url }).catch(() => {}); });
+
+    const copyEl = container.querySelector("[data-share-copy]");
+    if (copyEl) {
+      copyEl.addEventListener("click", () => {
+        const done = () => {
+          const original = "Copy link";
+          copyEl.textContent = "Copied!";
+          copyEl.classList.add("is-copied");
+          setTimeout(() => { copyEl.textContent = original; copyEl.classList.remove("is-copied"); }, 1600);
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(url).then(done).catch(done);
+        } else {
+          done();
+        }
+      });
+    }
+  }
+  GC.renderShareButtons = renderShareButtons;
 
   // ---------- newsletter subscribe form (Buttondown embed, no API key) ----------
   // Reads window.GC_CONFIG.buttondownUsername (set in js/config.js). Until

@@ -29,6 +29,24 @@
     // unavailable" instead of erroring.
     supabaseUrl: "https://cmzizvvqawgqxajqdzey.supabase.co",
     supabasePublishableKey: "sb_publishable_1eDUbCmz8sf5SPmJmTTn6g_gldK6iAN",
+
+    // Affiliate deep-link templates for the "Also search for it at" row on
+    // every PC game's price card (js/site.js renderAffiliateRow). Each key
+    // is left "" until you're accepted into that store's affiliate program
+    // (Green Man Gaming, Fanatical, and GOG all run theirs through an
+    // affiliate network — most commonly Awin) and pull a deep-link
+    // template from your dashboard's link-generator tool. Paste it in with
+    // literal "{url}" where the destination link goes, e.g. an Awin-style
+    // template looks like:
+    //   "https://www.awin1.com/cread.php?awinmid=XXXX&awinaffid=YOURID&clickref=&p={url}"
+    // Until a key is filled in, that store's link is still a real, direct
+    // search-result link on the store's own site — it just isn't tracked
+    // for commission yet.
+    affiliateLinkTemplates: {
+      greenmangaming: "",
+      fanatical: "",
+      gog: "",
+    },
   };
 
   // ---- GA4 bootstrap (only runs if a Measurement ID is set above) ----
