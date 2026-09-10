@@ -136,6 +136,9 @@
         <div class="side-card" id="price-card">
           <p class="price-loading">Checking current prices…</p>
         </div>
+        <div class="side-card" id="price-history-card">
+          <p class="price-history-empty">Loading…</p>
+        </div>
         <div class="affiliate-row" id="affiliate-row"></div>
         <div class="side-card">
           <h3>Platforms</h3>
@@ -198,6 +201,11 @@
   GameCodex.initDockNav();
   GameCodex.wireNewsletterForm(document.getElementById("newsletter-form"));
   GameCodex.renderPriceCard(document.getElementById("price-card"), {
+    title: "World of Warcraft",
+    platforms: ["PC"],
+  });
+  GameCodex.renderPriceHistoryChart(document.getElementById("price-history-card"), {
+    slug: SLUG,
     title: "World of Warcraft",
     platforms: ["PC"],
   });
