@@ -85,6 +85,10 @@
     </div>
 
     <div class="hero-carousel" id="hero-carousel">
+      <p class="carousel-eyebrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v6m0 0l-3.5-2M12 8l3.5-2M12 8v0"/><path d="M12 22v-6m0 0l-3.5 2M12 16l3.5 2"/><circle cx="12" cy="12" r="2"/></svg>
+        Upcoming &amp; anticipated
+      </p>
       <button class="carousel-arrow carousel-arrow-prev" type="button" aria-label="Previous game">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 5l-7 7 7 7"/></svg>
       </button>
@@ -93,6 +97,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 5l7 7-7 7"/></svg>
       </button>
       <h2 class="carousel-title" id="carousel-title">&nbsp;</h2>
+      <p class="carousel-meta" id="carousel-meta"></p>
       <div class="carousel-dots" id="carousel-dots"></div>
     </div>
 
@@ -212,17 +217,30 @@
     GameCodex.renderDealsBanner(document.getElementById("deals-strip"), games, { limit: 6 });
   });
 
-  GameCodex.ready.then(function (games) {
-    var trending = games.slice(0, 12); // newest 12 releases
-    GameCodex.renderGrid(document.getElementById("trending-grid"), trending);
-    GameCodex.buildCarousel(trending.slice(0, 8), {
+  GameCodex.readyUpcoming.then(function (upcoming) {
+    if (!upcoming || upcoming.length === 0) return;
+    GameCodex.buildCarousel(upcoming, {
       root: document.getElementById("hero-carousel"),
       stage: document.getElementById("carousel-stage"),
       title: document.getElementById("carousel-title"),
       dots: document.getElementById("carousel-dots"),
+      metaEl: document.getElementById("carousel-meta"),
       prevBtn: document.querySelector(".carousel-arrow-prev"),
       nextBtn: document.querySelector(".carousel-arrow-next"),
+      external: true,
+      hrefFor: function (g) { return g.officialUrl; },
+      badgeFor: function (g) { return g.badge || g.expectedRelease; },
+      metaFor: function (g) {
+        var plats = g.platforms.slice(0, 3).join(" · ");
+        return g.developer + '<span class="dot">&middot;</span>' + plats +
+          '<span class="dot">&middot;</span><a class="carousel-meta-link" href="' + g.officialUrl + '" target="_blank" rel="noopener">Official page ↗</a>';
+      },
     });
+  });
+
+  GameCodex.ready.then(function (games) {
+    var trending = games.slice(0, 12); // newest 12 releases
+    GameCodex.renderGrid(document.getElementById("trending-grid"), trending);
 
     var stats = GameCodex.computeStats(games);
     document.getElementById("stat-games").dataset.count = stats.gamesCovered;
