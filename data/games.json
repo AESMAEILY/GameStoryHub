@@ -897,7 +897,8 @@
       "value": 90,
       "source": "Metacritic",
       "url": "https://www.metacritic.com/game/it-takes-two/"
-    }
+    },
+    "poster": "assets/posters/it-takes-two.jpg"
   },
   {
     "slug": "cyberpunk-2077",
@@ -931,7 +932,8 @@
       "value": 87,
       "source": "Metacritic",
       "url": "https://www.metacritic.com/game/cyberpunk-2077/"
-    }
+    },
+    "poster": "assets/posters/cyberpunk-2077.jpg"
   },
   {
     "slug": "assassins-creed-valhalla",
@@ -1607,7 +1609,8 @@
       "value": 92,
       "source": "Metacritic",
       "url": "https://www.metacritic.com/game/bloodborne/"
-    }
+    },
+    "poster": "assets/posters/bloodborne.jpg"
   },
   {
     "slug": "gta-5",
@@ -1676,7 +1679,8 @@
       "value": 95,
       "source": "Metacritic",
       "url": "https://www.metacritic.com/game/the-last-of-us/"
-    }
+    },
+    "poster": "assets/posters/the-last-of-us.jpg"
   },
   {
     "slug": "minecraft",
@@ -1816,7 +1820,8 @@
       "value": 96,
       "source": "Metacritic",
       "url": "https://www.metacritic.com/game/portal-2/"
-    }
+    },
+    "poster": "assets/posters/portal-2.jpg"
   },
   {
     "slug": "mass-effect-2",
