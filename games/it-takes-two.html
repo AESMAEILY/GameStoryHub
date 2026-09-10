@@ -17,12 +17,12 @@
 <meta property="og:title" content="It Takes Two — Walkthrough &amp; Story | Digi-games">
 <meta property="og:description" content="A splitting couple gets turned into dolls and forced to cooperate. Top YouTube walkthrough, release info, and story for It Takes Two on Digi-games.">
 <meta property="og:url" content="https://aesmaeily.github.io/GameStoryHub/games/it-takes-two.html">
-<meta property="og:image" content="https://aesmaeily.github.io/GameStoryHub/assets/og-default.png">
+<meta property="og:image" content="https://aesmaeily.github.io/GameStoryHub/assets/og/it-takes-two.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="It Takes Two — Walkthrough &amp; Story | Digi-games">
 <meta name="twitter:description" content="A splitting couple gets turned into dolls and forced to cooperate. Top YouTube walkthrough, release info, and story for It Takes Two on Digi-games.">
-<meta name="twitter:image" content="https://aesmaeily.github.io/GameStoryHub/assets/og-default.png">
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "VideoGame", "name": "It Takes Two", "description": "A splitting couple gets turned into dolls and forced to cooperate.", "url": "https://aesmaeily.github.io/GameStoryHub/games/it-takes-two.html", "image": "https://aesmaeily.github.io/GameStoryHub/assets/og-default.png", "datePublished": "2021-03-26", "genre": ["Co-op Platformer"], "gamePlatform": ["PC", "PS5", "PS4", "Xbox"], "author": {"@type": "Organization", "name": "Hazelight Studios"}, "publisher": {"@type": "Organization", "name": "Electronic Arts"}}</script>
+<meta name="twitter:image" content="https://aesmaeily.github.io/GameStoryHub/assets/og/it-takes-two.png">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "VideoGame", "name": "It Takes Two", "description": "A splitting couple gets turned into dolls and forced to cooperate.", "url": "https://aesmaeily.github.io/GameStoryHub/games/it-takes-two.html", "image": "https://aesmaeily.github.io/GameStoryHub/assets/og/it-takes-two.png", "datePublished": "2021-03-26", "genre": ["Co-op Platformer"], "gamePlatform": ["PC", "PS5", "PS4", "Xbox"], "author": {"@type": "Organization", "name": "Hazelight Studios"}, "publisher": {"@type": "Organization", "name": "Electronic Arts"}}</script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
@@ -42,6 +42,10 @@
     <a href="../wishlist.html" class="dock-link" data-route="wishlist">
       <svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7.2-4.6-10-9.2C.4 8.6 2 5 5.6 5c2 0 3.4 1 4.9 2.9C11.9 6 13.3 5 15.3 5 19 5 20.6 8.6 19 11.8 16.8 16.4 12 21 12 21z"/></svg>
       <span class="dock-label">Wishlist</span>
+    </a>
+    <a href="../deals.html" class="dock-link" data-route="deals">
+      <svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12L12 3h7a2 2 0 012 2v7l-9 9a2 2 0 01-2.8 0l-6.2-6.2a2 2 0 010-2.8z"/><circle cx="15.5" cy="8.5" r="1.5" fill="currentColor" stroke="none"/></svg>
+      <span class="dock-label">Deals</span>
     </a>
     <button type="button" class="dock-link dock-search-toggle" id="dock-search-toggle" aria-label="Search games" aria-haspopup="dialog">
       <svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
@@ -84,6 +88,7 @@
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.2-4.6-10-9.2C.4 8.6 2 5 5.6 5c2 0 3.4 1 4.9 2.9C11.9 6 13.3 5 15.3 5 19 5 20.6 8.6 19 11.8 16.8 16.4 12 21 12 21z"/></svg>
             <span class="wishlist-label">Add to wishlist</span>
           </button>
+          <div class="share-row" id="share-row"></div>
         </div>
         <div class="game-meta-list">
           <div>Release date<strong>March 26, 2021</strong></div>
@@ -133,6 +138,7 @@
         <div class="side-card" id="price-card">
           <p class="price-loading">Checking current prices…</p>
         </div>
+        <div class="affiliate-row" id="affiliate-row"></div>
         <div class="side-card">
           <h3>Platforms</h3>
           <div class="platform-tags"><span>PC</span><span>PS5</span><span>PS4</span><span>Xbox</span></div>
@@ -197,6 +203,11 @@
     title: "It Takes Two",
     platforms: ["PC", "PS5", "PS4", "Xbox"],
   });
+  GameCodex.renderAffiliateRow(document.getElementById("affiliate-row"), {
+    title: "It Takes Two",
+    platforms: ["PC", "PS5", "PS4", "Xbox"],
+  });
+  GameCodex.renderShareButtons(document.getElementById("share-row"), "It Takes Two", "https://aesmaeily.github.io/GameStoryHub/games/it-takes-two.html");
   GameCodex.paintWishlistButtons(document);
   GameCodex.renderReviewsSection(document.getElementById("reviews-card"), {
     slug: SLUG,
