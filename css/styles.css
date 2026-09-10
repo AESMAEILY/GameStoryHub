@@ -662,6 +662,20 @@ body {
   position: relative;
   margin-bottom: clamp(36px, 6vw, 56px);
 }
+.carousel-eyebrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent2);
+  margin: 0 0 10px;
+}
+.carousel-eyebrow svg { width: 14px; height: 14px; }
 .carousel-stage {
   position: relative;
   height: clamp(260px, 34vw, 400px);
@@ -689,6 +703,21 @@ body {
   display: block;
 }
 .carousel-card .tile-art { position: absolute; inset: 0; padding: 0; }
+.carousel-card-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #06060a;
+  background: var(--tile-accent, var(--accent2));
+  padding: 3px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+}
 
 /* active-card extras (glow ring + gentle float), gated on motion-ok */
 .hero-carousel.motion-ok .carousel-card.is-active {
@@ -751,6 +780,26 @@ body {
   opacity: 0;
   transform: translateY(8px);
 }
+.carousel-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  text-align: center;
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  margin: -14px 0 22px;
+}
+.carousel-meta .dot { color: var(--text-faint); }
+.carousel-meta a.carousel-meta-link {
+  color: var(--accent2);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.carousel-meta a.carousel-meta-link:hover { text-decoration: underline; }
 
 .carousel-dots {
   position: relative;
@@ -1926,8 +1975,10 @@ a.rating-pill:hover { border-color: color-mix(in srgb, var(--accent2) 45%, var(-
   background: var(--accent2); padding: 3px 8px; border-radius: 999px;
 }
 .deal-body { display: flex; flex-direction: column; gap: 4px; padding: 14px; }
-.deal-title { font-size: 0.9rem; font-weight: 700; color: var(--text); }
+.deal-title-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.deal-title { font-size: 0.9rem; font-weight: 700; color: var(--text); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .deal-title:hover { text-decoration: underline; }
+.deal-title-row .tile-score { flex-shrink: 0; }
 .deal-store { font-size: 0.72rem; color: var(--text-faint); }
 .deal-price { display: flex; align-items: baseline; gap: 7px; margin: 4px 0 8px; font-variant-numeric: tabular-nums; }
 .deal-was { font-size: 0.76rem; color: var(--text-faint); text-decoration: line-through; }
