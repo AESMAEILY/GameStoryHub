@@ -214,6 +214,10 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
       <svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7.2-4.6-10-9.2C.4 8.6 2 5 5.6 5c2 0 3.4 1 4.9 2.9C11.9 6 13.3 5 15.3 5 19 5 20.6 8.6 19 11.8 16.8 16.4 12 21 12 21z"/></svg>
       <span class="dock-label">Wishlist</span>
     </a>
+    <a href="../deals.html" class="dock-link" data-route="deals">
+      <svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12L12 3h7a2 2 0 012 2v7l-9 9a2 2 0 01-2.8 0l-6.2-6.2a2 2 0 010-2.8z"/><circle cx="15.5" cy="8.5" r="1.5" fill="currentColor" stroke="none"/></svg>
+      <span class="dock-label">Deals</span>
+    </a>
     <button type="button" class="dock-link dock-search-toggle" id="dock-search-toggle" aria-label="Search games" aria-haspopup="dialog">
       <svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
       <span class="dock-label">Search</span>
@@ -252,6 +256,7 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.2-4.6-10-9.2C.4 8.6 2 5 5.6 5c2 0 3.4 1 4.9 2.9C11.9 6 13.3 5 15.3 5 19 5 20.6 8.6 19 11.8 16.8 16.4 12 21 12 21z"/></svg>
             <span class="wishlist-label">Add to wishlist</span>
           </button>
+          <div class="share-row" id="share-row"></div>
         </div>
         <div class="game-meta-list">
           <div>Release date<strong>{release_full}</strong></div>
@@ -295,6 +300,7 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
         <div class="side-card" id="price-card">
           <p class="price-loading">Checking current prices…</p>
         </div>
+        <div class="affiliate-row" id="affiliate-row"></div>
         <div class="side-card">
           <h3>Platforms</h3>
           <div class="platform-tags">{platform_tags}</div>
@@ -359,6 +365,11 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
     title: "{title_js}",
     platforms: {platforms_js},
   }});
+  GameCodex.renderAffiliateRow(document.getElementById("affiliate-row"), {{
+    title: "{title_js}",
+    platforms: {platforms_js},
+  }});
+  GameCodex.renderShareButtons(document.getElementById("share-row"), "{title_js}", "{canonical_url_js}");
   GameCodex.paintWishlistButtons(document);
   GameCodex.renderReviewsSection(document.getElementById("reviews-card"), {{
     slug: SLUG,
@@ -425,7 +436,17 @@ def js_str(s):
 def build_page(game):
     accent = game["accent"].lstrip("#")
     canonical_url = f"{SITE_URL}/games/{game['slug']}.html"
-    og_image = f"{SITE_URL}/{game['poster']}" if game.get("poster") else DEFAULT_OG_IMAGE
+    og_path = os.path.join(ROOT, "assets", "og", f"{game['slug']}.png")
+    if os.path.exists(og_path):
+        # Generated per-game share card (scripts/generate_og_images.py) —
+        # title, critic score, and poster/monogram baked in, so a link
+        # shared to Discord/Twitter/iMessage identifies the actual game,
+        # not just the site.
+        og_image = f"{SITE_URL}/assets/og/{game['slug']}.png"
+    elif game.get("poster"):
+        og_image = f"{SITE_URL}/{game['poster']}"
+    else:
+        og_image = DEFAULT_OG_IMAGE
     meta_description = esc(f"{game['tagline']} Top YouTube walkthrough, release info, and story for {game['title']} on Digi-games.")
     return PAGE_TEMPLATE.format(
         title=esc(game["title"]),
@@ -456,6 +477,7 @@ def build_page(game):
         og_image=og_image,
         json_ld=game_json_ld(game, canonical_url, og_image),
         title_js=js_str(game["title"]),
+        canonical_url_js=js_str(canonical_url),
         platforms_js=json.dumps(game["platforms"]),
         official_score_js=json.dumps(game.get("officialScore")),
     )

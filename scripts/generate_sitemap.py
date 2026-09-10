@@ -40,6 +40,7 @@ def main():
     entries = [
         url_entry(f"{SITE_URL}/", "1.0", "weekly", today),
         url_entry(f"{SITE_URL}/browse.html", "0.9", "weekly", today),
+        url_entry(f"{SITE_URL}/deals.html", "0.8", "daily", today),
     ]
     for g in sorted(games, key=lambda x: x["slug"]):
         entries.append(url_entry(f"{SITE_URL}/games/{g['slug']}.html", "0.7", "monthly", today))

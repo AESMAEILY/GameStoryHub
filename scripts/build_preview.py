@@ -63,6 +63,10 @@ __CSS__
       <svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7.2-4.6-10-9.2C.4 8.6 2 5 5.6 5c2 0 3.4 1 4.9 2.9C11.9 6 13.3 5 15.3 5 19 5 20.6 8.6 19 11.8 16.8 16.4 12 21 12 21z"/></svg>
       <span class="dock-label">Wishlist</span>
     </a>
+    <a href="javascript:void(0)" class="dock-link" data-route="deals" data-nav="/deals">
+      <svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12L12 3h7a2 2 0 012 2v7l-9 9a2 2 0 01-2.8 0l-6.2-6.2a2 2 0 010-2.8z"/><circle cx="15.5" cy="8.5" r="1.5" fill="currentColor" stroke="none"/></svg>
+      <span class="dock-label">Deals</span>
+    </a>
     <button type="button" class="dock-link dock-search-toggle" id="dock-search-toggle" aria-label="Search games" aria-haspopup="dialog">
       <svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
       <span class="dock-label">Search</span>
@@ -134,6 +138,10 @@ __GAMES_JSON__
   }
   function year(iso) { return iso.slice(0, 4); }
   function gameHref(slug) { return "/game/" + slug; }
+  // Share/affiliate links point at the real deployed site, not this
+  // in-conversation preview bundle, since a shared or search link should
+  // land on a real page, not a temporary Artifact iframe.
+  var PREVIEW_SITE_URL = "https://aesmaeily.github.io/GameStoryHub";
 
   // Data-backed hero stats + platform-family coverage. Mirrors GC.computeStats
   // / GC.platformCoverage / GC.spawnSparkles in js/site.js.
@@ -196,6 +204,69 @@ __GAMES_JSON__
         ? "Live PC price comparison (via CheapShark) runs on the deployed site &mdash; not simulated in this local preview."
         : "Live price comparison currently covers PC storefronts only.") +
       '</p>';
+  }
+
+  // "Best deals this week" (mirrors GC.renderDealsBanner/renderDealsGrid in
+  // js/site.js) is scoped out the same way renderPriceCardPreview is above
+  // -- it needs a live CheapShark fetch this sandbox may block -- so both
+  // the home-page strip and the /deals route show a "see the live site"
+  // note with the same card shape instead of simulated data.
+  function renderDealsNote(container) {
+    if (!container) return;
+    container.innerHTML = '<div class="no-results"><strong>Live deals run on the deployed site.</strong>' +
+      'This local preview does not simulate outbound CheapShark price lookups -- see the real multi-page site for the live "Best deals this week" list.</div>';
+  }
+
+  // Affiliate store search links -- identical logic to GC.affiliateSearchLinks
+  // / GC.renderAffiliateRow in js/site.js (plain search URLs, no network
+  // call, so no reason to scope this out of the preview).
+  function renderAffiliateRowPreview(container, game) {
+    if (!container) return;
+    var isPc = game.platforms.some(function (p) {
+      var s = p.toLowerCase();
+      return s.indexOf("pc") !== -1 || s.indexOf("mac") !== -1;
+    });
+    if (!isPc) { container.innerHTML = ""; return; }
+    var stores = [
+      { label: "Green Man Gaming", href: "https://www.greenmangaming.com/search/?query=" + encodeURIComponent(game.title) },
+      { label: "Fanatical", href: "https://www.fanatical.com/en/search?search=" + encodeURIComponent(game.title) },
+      { label: "GOG", href: "https://www.gog.com/en/games?query=" + encodeURIComponent(game.title) },
+    ];
+    container.innerHTML = '<p class="affiliate-row-label">Also search for it at</p><div class="affiliate-links">' +
+      stores.map(function (s) { return '<a class="affiliate-link" target="_blank" rel="noopener sponsored" href="' + s.href + '">' + s.label + ' &#8599;</a>'; }).join("") +
+      '</div>';
+  }
+
+  // Social share buttons -- identical logic to GC.renderShareButtons in
+  // js/site.js (no network calls, so nothing needs to be scoped out here).
+  function renderShareButtonsPreview(container, title, url) {
+    if (!container) return;
+    function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+    var u = encodeURIComponent(url), t = encodeURIComponent(title);
+    var targets = [
+      { label: "X", href: "https://twitter.com/intent/tweet?url=" + u + "&text=" + t },
+      { label: "Facebook", href: "https://www.facebook.com/sharer/sharer.php?u=" + u },
+      { label: "Reddit", href: "https://www.reddit.com/submit?url=" + u + "&title=" + t },
+      { label: "WhatsApp", href: "https://wa.me/?text=" + t + "%20" + u },
+    ];
+    var nativeBtn = (navigator.share) ? '<button type="button" class="share-btn share-native" data-share-native>Share &#8599;</button>' : "";
+    container.innerHTML = '<span class="share-label">Share</span>' + nativeBtn +
+      targets.map(function (x) { return '<a class="share-btn" target="_blank" rel="noopener" href="' + x.href + '" aria-label="Share on ' + x.label + '">' + esc(x.label) + '</a>'; }).join("") +
+      '<button type="button" class="share-btn share-copy" data-share-copy>Copy link</button>';
+    var nativeEl = container.querySelector("[data-share-native]");
+    if (nativeEl) nativeEl.addEventListener("click", function () { navigator.share({ title: title, url: url }).catch(function () {}); });
+    var copyEl = container.querySelector("[data-share-copy]");
+    if (copyEl) {
+      copyEl.addEventListener("click", function () {
+        function done() {
+          copyEl.textContent = "Copied!";
+          copyEl.classList.add("is-copied");
+          setTimeout(function () { copyEl.textContent = "Copy link"; copyEl.classList.remove("is-copied"); }, 1600);
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done).catch(done);
+        else done();
+      });
+    }
   }
 
   // Newsletter subscribe form (mirrors GC.wireNewsletterForm in js/site.js).
@@ -795,6 +866,10 @@ __GAMES_JSON__
           '</div></div>' +
         '</div>' +
       '</section>' +
+      '<section class="section" style="padding-bottom:0;"><div class="container">' +
+        '<div class="section-head"><div><h2>&#128293; Best deals this week</h2><p>Live discounts across our PC-storefront titles, via CheapShark.</p></div><a class="see-all" href="javascript:void(0)" data-nav="/deals">See all deals &rarr;</a></div>' +
+        '<div class="deals-strip" id="deals-strip"></div>' +
+      '</div></section>' +
       '<section class="section"><div class="container">' +
         '<div class="section-head"><div><h2>Trending now</h2><p>Hover any tile for a muted preview &mdash; click through for the full walkthrough and story.</p></div><a class="see-all" href="javascript:void(0)" data-nav="/browse">Browse all games &rarr;</a></div>' +
         '<div class="grid" id="trending-grid"></div>' +
@@ -807,6 +882,7 @@ __GAMES_JSON__
       '</div></section>';
 
     spawnSparkles(document.querySelector(".hero-brand"));
+    renderDealsNote(document.getElementById("deals-strip"));
     renderGrid(document.getElementById("trending-grid"), trending);
     buildCarousel(trending.slice(0, 8), {
       root: document.getElementById("hero-carousel"),
@@ -962,7 +1038,10 @@ __GAMES_JSON__
                 '<div>Developer<strong>' + escapeHtml(game.developer) + '</strong></div>' +
                 '<div>Publisher<strong>' + escapeHtml(game.publisher) + '</strong></div>' +
               '</div>' +
-              '<button type="button" class="wishlist-btn" id="wishlist-btn" aria-pressed="false">' + HEART_ICON + '<span class="wishlist-label">Add to wishlist</span></button>' +
+              '<div class="hero-actions">' +
+                '<button type="button" class="wishlist-btn" id="wishlist-btn" aria-pressed="false">' + HEART_ICON + '<span class="wishlist-label">Add to wishlist</span></button>' +
+                '<div class="share-row" id="share-row"></div>' +
+              '</div>' +
             '</div>' +
           '</div>' +
         '</div>' +
@@ -983,6 +1062,7 @@ __GAMES_JSON__
           '</div>' +
           '<aside>' +
             '<div class="side-card" id="price-card"></div>' +
+            '<div class="affiliate-row" id="affiliate-row"></div>' +
             '<div class="side-card"><h3>Platforms</h3><div class="platform-tags">' + game.platforms.map(function (p) { return '<span>' + escapeHtml(p) + '</span>'; }).join("") + '</div></div>' +
             '<div class="side-card"><h3>Details</h3><ul>' +
               '<li><span>Genre</span><strong>' + escapeHtml(game.genres[0]) + '</strong></li>' +
@@ -1015,9 +1095,21 @@ __GAMES_JSON__
     wireTilt(document.querySelector(".game-hero-grid"));
     mountYouTubePlayer("yt-player-main", game.youtube.id);
     renderPriceCardPreview(document.getElementById("price-card"), game);
+    renderAffiliateRowPreview(document.getElementById("affiliate-row"), game);
+    renderShareButtonsPreview(document.getElementById("share-row"), game.title, PREVIEW_SITE_URL + "/games/" + slug + ".html");
     wireWishlistButton(document.getElementById("wishlist-btn"), slug);
     renderReviewsSectionPreview(document.getElementById("reviews-card"), game);
     window.scrollTo(0, 0);
+  }
+
+  function viewDeals() {
+    app.innerHTML =
+      '<section class="section" style="padding-bottom:0;"><div class="container">' +
+        '<div class="deals-page-head"><div><h1 style="font-size:clamp(1.7rem,3.4vw,2.4rem);margin:0 0 6px;">&#128293; Best deals this week</h1>' +
+        '<p style="color:var(--text-dim);margin:0;max-width:60ch;">Every discount currently live across our PC-storefront titles, ranked by savings. Console-only games are not covered here.</p></div></div>' +
+      '</div></section>' +
+      '<section class="section" style="padding-top:16px;"><div class="container"><div class="deals-grid" id="deals-grid"></div></div></section>';
+    renderDealsNote(document.getElementById("deals-grid"));
   }
 
   function viewWishlist() {
@@ -1069,6 +1161,11 @@ __GAMES_JSON__
       document.documentElement.style.setProperty("--accent", "#7c8cff");
       document.documentElement.style.setProperty("--accent2", "#3ee6c4");
       viewWishlist();
+    } else if (path === "/deals") {
+      document.querySelector('[data-route="deals"]').classList.add("active");
+      document.documentElement.style.setProperty("--accent", "#7c8cff");
+      document.documentElement.style.setProperty("--accent2", "#3ee6c4");
+      viewDeals();
     } else if (path.indexOf("/game/") === 0) {
       var slug = path.slice("/game/".length);
       var g = GAMES.find(function (x) { return x.slug === slug; });
