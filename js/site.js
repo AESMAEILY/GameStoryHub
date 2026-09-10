@@ -973,17 +973,17 @@
   function renderShareButtons(container, title, url) {
     if (!container) return;
     const targets = shareTargets(url, title);
-    const nativeBtn = (navigator.share) ? `<button type="button" class="share-btn share-native" data-share-native>Share ↗</button>` : "";
+    const nativeBtn = (navigator.share) ? `<button type="button" class="gc-share-btn gc-share-native" data-gc-share-native>Share ↗</button>` : "";
     container.innerHTML =
-      `<span class="share-label">Share</span>` +
+      `<span class="gc-share-label">Share</span>` +
       nativeBtn +
-      targets.map((t) => `<a class="share-btn" target="_blank" rel="noopener" href="${t.href}" aria-label="Share on ${t.label}">${escapeHtml(t.label)}</a>`).join("") +
-      `<button type="button" class="share-btn share-copy" data-share-copy>Copy link</button>`;
+      targets.map((t) => `<a class="gc-share-btn" target="_blank" rel="noopener" href="${t.href}" aria-label="Share on ${t.label}">${escapeHtml(t.label)}</a>`).join("") +
+      `<button type="button" class="gc-share-btn gc-share-copy" data-gc-share-copy>Copy link</button>`;
 
-    const nativeEl = container.querySelector("[data-share-native]");
+    const nativeEl = container.querySelector("[data-gc-share-native]");
     if (nativeEl) nativeEl.addEventListener("click", () => { navigator.share({ title, url }).catch(() => {}); });
 
-    const copyEl = container.querySelector("[data-share-copy]");
+    const copyEl = container.querySelector("[data-gc-share-copy]");
     if (copyEl) {
       copyEl.addEventListener("click", () => {
         const done = () => {
