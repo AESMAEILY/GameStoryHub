@@ -130,7 +130,8 @@
     "blurb": "Ken Levine's narrative shooter aboard the generation ship Mayflower, where Judas leads a revolt against its ruling AI factions.",
     "accent": "#e0483e",
     "accent2": "#241436",
-    "officialUrl": "https://www.judasthegame.com/"
+    "officialUrl": "https://www.judasthegame.com/",
+    "poster": "assets/posters/judas.jpg"
   },
   {
     "slug": "elder-scrolls-6",
