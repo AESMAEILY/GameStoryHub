@@ -11,10 +11,12 @@
 
   const ROOT = window.GC_ROOT || "./";
   const DATA_URL = ROOT + "data/games.json";
+  const UPCOMING_URL = ROOT + "data/upcoming.json";
 
   const GC = {
     games: [],
     ready: null,
+    readyUpcoming: null,
   };
   window.GameCodex = GC;
 
@@ -31,6 +33,19 @@
     .catch((err) => {
       console.error("[GameCodex] Could not load game data.", err);
       document.dispatchEvent(new CustomEvent("gc:data-error", { detail: err }));
+      return [];
+    });
+
+  // Real, individually-researched anticipated/not-yet-released titles for
+  // the home hero carousel — a separate small dataset from the 50-game
+  // walkthrough catalog above, since none of those games are unreleased.
+  GC.readyUpcoming = fetch(UPCOMING_URL)
+    .then((r) => {
+      if (!r.ok) throw new Error("Failed to load upcoming.json: " + r.status);
+      return r.json();
+    })
+    .catch((err) => {
+      console.error("[GameCodex] Could not load upcoming-games data.", err);
       return [];
     });
 
@@ -499,13 +514,18 @@
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (!reduceMotion) root.classList.add("motion-ok");
 
+    const href = (g) => (els.hrefFor ? els.hrefFor(g) : gamePath(g.slug));
+    const linkAttrs = els.external ? ` target="_blank" rel="noopener"` : "";
+
     const cards = games.map((g, i) => {
       const el = document.createElement("div");
       el.className = "carousel-card card-enter";
       el.style.setProperty("--tile-accent", g.accent);
       el.style.setProperty("--tile-accent2", g.accent2);
-      el.innerHTML = `<a class="carousel-card-media" href="${gamePath(g.slug)}" aria-label="Open ${escapeHtml(g.title)}" tabindex="-1">
+      const badgeHTML = els.badgeFor ? els.badgeFor(g) : "";
+      el.innerHTML = `<a class="carousel-card-media" href="${href(g)}"${linkAttrs} aria-label="Open ${escapeHtml(g.title)}" tabindex="-1">
         <div class="tile-art${g.poster ? " has-photo" : ""}">${posterArtHTML(g)}</div>
+        ${badgeHTML ? `<span class="carousel-card-badge">${badgeHTML}</span>` : ""}
       </a>`;
       el.addEventListener("click", (e) => {
         if (i !== current) { e.preventDefault(); goTo(i); }
@@ -549,10 +569,12 @@
           titleEl.classList.add("swap");
           titleSwapTimer = setTimeout(() => {
             titleEl.textContent = games[current].title;
+            if (els.metaEl) els.metaEl.innerHTML = els.metaFor ? els.metaFor(games[current]) : "";
             titleEl.classList.remove("swap");
           }, 200);
         } else {
           titleEl.textContent = games[current].title;
+          if (els.metaEl) els.metaEl.innerHTML = els.metaFor ? els.metaFor(games[current]) : "";
         }
       }
       if (dotsEl) {
@@ -823,6 +845,7 @@
             accent: game.accent,
             accent2: game.accent2,
             poster: game.poster || null,
+            officialScore: game.officialScore || null,
             store: storeMap[d.storeID] || ("Store " + d.storeID),
             storeID: String(d.storeID),
             price: parseFloat(d.salePrice),
@@ -894,6 +917,14 @@
   }
   GC.getWeeklyDeals = getWeeklyDeals;
 
+  function dealScoreHTML(d) {
+    const os = d.officialScore;
+    if (!os || typeof os.value !== "number") return "";
+    return `<span class="tile-score" title="Official critic score: ${Math.round(os.value)}/100 via ${escapeHtml(os.source || "critics")}">
+      <svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.8-6.2 3.8 1.6-7-5.4-4.8 7.1-.7z"/></svg>${Math.round(os.value)}
+    </span>`;
+  }
+
   function dealCardHTML(d) {
     const artHTML = d.poster
       ? `<img class="deal-art-img" src="${ROOT}${d.poster}" alt="" loading="lazy">`
@@ -905,7 +936,10 @@
       `<div class="deal-card">` +
       `<a class="deal-art" href="${gamePath(d.slug)}" aria-label="${escapeHtml(d.title)}">${artHTML}<span class="deal-off">-${Math.round(d.savings)}%</span></a>` +
       `<div class="deal-body">` +
+      `<div class="deal-title-row">` +
       `<a class="deal-title" href="${gamePath(d.slug)}">${escapeHtml(d.title)}</a>` +
+      dealScoreHTML(d) +
+      `</div>` +
       `<span class="deal-store">${escapeHtml(d.store)}</span>` +
       `<span class="deal-price"><span class="deal-was">$${d.normal.toFixed(2)}</span><span class="deal-now">$${d.price.toFixed(2)}</span></span>` +
       `<a class="deal-go" target="_blank" rel="noopener" title="${goTitle}" href="${storeLinkHref(d)}">${label}</a>` +
