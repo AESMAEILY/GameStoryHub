@@ -110,7 +110,7 @@
     "blurb": "CD Projekt Red's next Witcher saga, in full-scale production with Ciri stepping into the lead role.",
     "accent": "#7fd8d0",
     "accent2": "#2b3a4a",
-    "officialUrl": "https://en.wikipedia.org/wiki/The_Witcher_4",
+    "officialUrl": "https://www.thewitcher.com/sg/en/witcher4",
     "poster": "assets/posters/the-witcher-4.jpg"
   },
   {
@@ -149,7 +149,7 @@
     "blurb": "Bethesda's next mainline Elder Scrolls game, built on Creation Engine 3 as the successor to Skyrim.",
     "accent": "#4d7ea8",
     "accent2": "#8a6d2f",
-    "officialUrl": "https://en.wikipedia.org/wiki/The_Elder_Scrolls_VI",
+    "officialUrl": "https://elderscrolls.bethesda.net/en-US",
     "poster": "assets/posters/elder-scrolls-6.jpg"
   }
 ]
